@@ -1,0 +1,1809 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boosmentor OS v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --blue:#4169E1;--blue-dim:rgba(65,105,225,0.1);--blue-mid:rgba(65,105,225,0.25);
+  --bg:#080810;--s1:#0E0E1A;--s2:#141428;--s3:#1A1A30;
+  --brd:rgba(65,105,225,0.12);--brd2:rgba(65,105,225,0.28);
+  --text:#FFF;--text2:#A0A0C0;--text3:#404060;
+  --green:#22C55E;--red:#EF4444;--amber:#F59E0B;--purple:#8B5CF6;
+  --font-d:'Bebas Neue',sans-serif;--font:'DM Sans',sans-serif;--font-m:'DM Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--brd) 1px,transparent 1px),linear-gradient(90deg,var(--brd) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;opacity:0.3}
+.app{position:relative;z-index:1;display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:210px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--brd);display:flex;flex-direction:column;height:100vh;overflow-y:auto}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid var(--brd)}
+.sb-logo-t{font-family:var(--font-d);font-size:19px;letter-spacing:2px}
+.sb-logo-t span{color:var(--blue)}
+.sb-logo-s{font-size:8px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+.sb-sec{padding:14px 10px 4px}
+.sb-lbl{font-size:8px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;padding:0 6px;margin-bottom:3px}
+.sb-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;cursor:pointer;transition:all .15s;color:var(--text3);font-size:11px;font-weight:500;border:1px solid transparent}
+.sb-item:hover{background:var(--blue-dim);color:var(--text2)}
+.sb-item.active{background:var(--blue-dim);color:var(--blue);border-color:var(--brd2)}
+.sb-icon{font-size:12px;width:14px;text-align:center;flex-shrink:0}
+.sb-footer{margin-top:auto;padding:12px 10px;border-top:1px solid var(--brd);font-size:10px;color:var(--text3);display:flex;align-items:center;gap:6px}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;border-bottom:1px solid var(--brd);background:rgba(8,8,16,.95);backdrop-filter:blur(12px);flex-shrink:0}
+.tb-title{font-family:var(--font-d);font-size:18px;letter-spacing:1px}
+.tb-right{display:flex;align-items:center;gap:8px}
+.period-sel{background:var(--s2);border:1px solid var(--brd2);border-radius:5px;padding:5px 10px;font-size:11px;color:var(--blue);font-family:var(--font);cursor:pointer;outline:none}
+.btn{background:var(--blue);border:none;border-radius:5px;padding:6px 14px;font-size:11px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--font)}
+.btn:hover{opacity:.85}
+.btn-sm{padding:4px 10px;font-size:10px}
+.btn-out{background:none;border:1px solid var(--brd2);border-radius:5px;padding:5px 12px;font-size:11px;color:var(--blue);cursor:pointer;font-family:var(--font)}
+
+.page{flex:1;overflow-y:auto;padding:20px 22px;display:none}
+.page.active{display:block}
+
+/* COMPONENTS */
+.sec-hd{display:flex;align-items:baseline;gap:10px;margin-bottom:18px}
+.sec-t{font-family:var(--font-d);font-size:26px;letter-spacing:1px}
+.sec-s{font-size:11px;color:var(--text3)}
+
+.kpi-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.kpi{background:var(--s1);border:1px solid var(--brd);border-radius:8px;padding:13px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--blue);opacity:.5}
+.kpi-l{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px}
+.kpi-v{font-family:var(--font-d);font-size:24px;letter-spacing:1px;line-height:1}
+.kpi-v.bl{color:var(--blue)}.kpi-v.gr{color:var(--green)}.kpi-v.am{color:var(--amber)}.kpi-v.rd{color:var(--red)}
+.kpi-d{font-size:9px;color:var(--text3);margin-top:3px}
+.kpi-indicator{font-size:8px;margin-top:4px;padding:2px 6px;border-radius:3px;display:inline-block}
+.good{background:rgba(34,197,94,.15);color:var(--green)}
+.warn{background:rgba(245,158,11,.15);color:var(--amber)}
+.bad{background:rgba(239,68,68,.15);color:var(--red)}
+
+.card{background:var(--s1);border:1px solid var(--brd);border-radius:8px;overflow:hidden;margin-bottom:14px}
+.card-h{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--brd)}
+.card-t{font-size:12px;font-weight:700;color:var(--text)}
+.card-a{font-size:10px;color:var(--blue);cursor:pointer}
+.card-b{padding:13px 14px}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+
+table{width:100%;border-collapse:collapse}
+thead th{padding:8px 12px;text-align:left;font-size:9px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;background:var(--s2);border-bottom:1px solid var(--brd)}
+tbody tr{border-bottom:1px solid var(--brd);transition:background .15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--blue-dim)}
+tbody td{padding:9px 12px;font-size:11px;color:var(--text2)}
+tbody td:first-child{color:var(--text);font-weight:500}
+
+.tag{display:inline-flex;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:700}
+.t-bl{background:var(--blue-dim);color:var(--blue);border:1px solid var(--brd2)}
+.t-gr{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.t-am{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.t-rd{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.t-pu{background:rgba(139,92,246,.1);color:var(--purple);border:1px solid rgba(139,92,246,.2)}
+.t-ig{background:rgba(236,72,153,.1);color:#EC4899;border:1px solid rgba(236,72,153,.2)}
+.t-li{background:rgba(10,102,194,.15);color:#4A9FD5;border:1px solid rgba(10,102,194,.2)}
+
+.src-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.src-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.src-nm{font-size:11px;color:var(--text2);flex:1}
+.src-bg{flex:2;height:4px;background:var(--s3);border-radius:2px}
+.src-fill{height:4px;border-radius:2px}
+.src-v{font-size:11px;font-weight:600;color:var(--text);width:52px;text-align:right;font-family:var(--font-m)}
+
+.fn-row{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.fn-lbl{font-size:10px;color:var(--text2);width:120px;flex-shrink:0}
+.fn-bg{flex:1;height:4px;background:var(--s3);border-radius:2px}
+.fn-bar{height:4px;border-radius:2px;background:var(--blue)}
+.fn-v{font-size:10px;font-weight:700;width:26px;text-align:right;font-family:var(--font-m)}
+.fn-p{font-size:9px;color:var(--text3);width:32px;text-align:right;font-family:var(--font-m)}
+
+.fi{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
+.fi input,.fi select,.fi textarea{background:var(--s2);border:1px solid var(--brd);border-radius:5px;padding:7px 10px;font-size:11px;color:var(--text);font-family:var(--font);outline:none;width:100%;transition:border-color .2s}
+.fi input:focus,.fi select:focus,.fi textarea:focus{border-color:var(--blue)}
+.fi textarea{min-height:80px;resize:vertical}
+.fr{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px;margin-bottom:10px}
+
+.empty{text-align:center;padding:28px;color:var(--text3);font-size:11px}
+.toast{position:fixed;bottom:18px;right:18px;background:var(--blue);color:#fff;padding:10px 16px;border-radius:6px;font-size:12px;font-weight:600;z-index:9999;transform:translateY(60px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.err{background:var(--red)}
+
+/* SUB-TABS */
+.stabs{display:flex;border-bottom:1px solid var(--brd);margin-bottom:16px}
+.stab{padding:9px 14px;font-size:11px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.stab:hover{color:var(--text2)}
+.stab.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* CHART CONTAINERS */
+.chart-wrap{position:relative;height:200px;margin-bottom:8px}
+.chart-sm{position:relative;height:140px}
+
+/* MODAL */
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center}
+.moverlay.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--brd2);border-radius:10px;padding:20px;width:580px;max-width:95vw;max-height:88vh;overflow-y:auto}
+.modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.modal-t{font-size:13px;font-weight:700}
+.modal-x{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer}
+.modal-actions{display:flex;gap:7px;justify-content:flex-end;margin-top:12px}
+.btn-cancel{background:none;border:1px solid var(--brd);border-radius:5px;padding:7px 12px;color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--font)}
+
+/* CALL ANALYSIS */
+.call-card{background:var(--s1);border:1px solid var(--brd);border-radius:8px;padding:14px;margin-bottom:10px;cursor:pointer;transition:border-color .2s}
+.call-card:hover{border-color:var(--brd2)}
+.asec{background:var(--s2);border-radius:6px;padding:10px;margin-bottom:8px}
+.asec-t{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:7px}
+.aitem{display:flex;gap:5px;margin-bottom:4px;font-size:10px;color:var(--text2);line-height:1.5}
+.adot{width:4px;height:4px;border-radius:50%;flex-shrink:0;margin-top:5px}
+
+/* SCORE GRID */
+.score-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:12px}
+.score-item{background:var(--s2);border-radius:6px;padding:10px}
+.score-cat{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.score-bar-bg{height:5px;background:var(--s3);border-radius:3px;margin-bottom:4px}
+.score-bar-fill{height:5px;border-radius:3px}
+.score-val{font-size:11px;font-weight:700;font-family:var(--font-m)}
+
+/* ADS METRICS INDICATORS */
+.metric-card{background:var(--s2);border-radius:6px;padding:12px;position:relative}
+.metric-label{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.metric-val{font-family:var(--font-d);font-size:22px;letter-spacing:1px}
+.metric-ranges{margin-top:6px;display:flex;flex-direction:column;gap:2px}
+.mrange{font-size:9px;display:flex;align-items:center;gap:4px}
+.mrange-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+/* CALENDAR */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:14px}
+.cal-day-name{text-align:center;font-size:9px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;padding:5px 0}
+.cal-day{background:var(--s1);border:1px solid var(--brd);border-radius:6px;min-height:80px;padding:6px;cursor:pointer;transition:border-color .15s}
+.cal-day:hover{border-color:var(--brd2)}
+.cal-day.today{border-color:var(--blue);background:var(--blue-dim)}
+.cal-day.other-m{opacity:.3}
+.cal-dn{font-size:10px;font-weight:700;color:var(--text2);margin-bottom:3px}
+.cal-day.today .cal-dn{color:var(--blue)}
+.cal-pill{border-radius:3px;padding:1px 4px;font-size:8px;font-weight:600;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.cp-future{background:rgba(65,105,225,.15);color:var(--blue)}
+.cp-today{background:rgba(245,158,11,.15);color:var(--amber)}
+.cp-overdue{background:rgba(239,68,68,.15);color:var(--red)}
+.unsched{background:var(--s1);border:1px solid var(--brd);border-radius:8px;padding:12px}
+.unsched-t{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between}
+.unsched-pills{display:flex;flex-wrap:wrap;gap:5px}
+.unsched-pill{background:var(--s2);border:1px solid var(--brd);border-radius:20px;padding:3px 9px;font-size:10px;color:var(--text2);cursor:pointer}
+
+/* TIME TRACKER */
+.time-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--brd)}
+.time-row:last-child{border-bottom:none}
+.time-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.time-name{flex:1;font-size:11px;font-weight:600}
+.time-hrs{font-size:12px;font-weight:700;font-family:var(--font-m)}
+.time-bar-bg{width:70px;height:4px;background:var(--s3);border-radius:2px}
+.time-bar{height:4px;border-radius:2px}
+
+/* CONFERENCE SECTION */
+.conf-phase{background:var(--s2);border-radius:8px;padding:14px;margin-bottom:12px;border-left:3px solid var(--blue)}
+.conf-phase-t{font-size:11px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.day-badge{font-size:9px;background:var(--blue-dim);color:var(--blue);border:1px solid var(--brd2);border-radius:4px;padding:2px 7px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-t">BOOST<span>MENTOR</span></div>
+    <div class="sb-logo-s">Business OS v2</div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Vue globale</div>
+    <div class="sb-item active" onclick="nav('ceo',this)"><span class="sb-icon">◈</span>Dashboard CEO</div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Acquisition</div>
+    <div class="sb-item" onclick="nav('orga',this)"><span class="sb-icon">▶</span>Organique</div>
+    <div class="sb-item" onclick="nav('prospect',this)"><span class="sb-icon">◎</span>Prospection</div>
+    <div class="sb-item" onclick="nav('ads',this)"><span class="sb-icon">◆</span>Publicités & Events</div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Vente</div>
+    <div class="sb-item" onclick="nav('vente',this)"><span class="sb-icon">◐</span>Appels & Closing</div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Base</div>
+    <div class="sb-item" onclick="nav('docs',this)"><span class="sb-icon">☰</span>Documentation</div>
+  </div>
+  <div class="sb-footer">
+    <div class="sdot"></div>
+    <span id="sync-lbl">Airtable ✓</span>
+    <span id="sync-date" style="margin-left:auto"></span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+<div class="topbar">
+  <div class="tb-title" id="page-title">DASHBOARD CEO</div>
+  <div class="tb-right">
+    <select class="period-sel" id="period-sel" onchange="onPeriodChange()">
+      <option value="month">Ce mois</option>
+      <option value="quarter">Ce trimestre</option>
+      <option value="year">Cette année</option>
+      <option value="custom">Personnalisé</option>
+    </select>
+    <div id="custom-dates" style="display:none;gap:6px;align-items:center">
+      <input type="date" id="date-from" style="background:var(--s2);border:1px solid var(--brd2);border-radius:5px;padding:5px 8px;font-size:10px;color:var(--text);font-family:var(--font);outline:none">
+      <span style="font-size:10px;color:var(--text3)">→</span>
+      <input type="date" id="date-to" style="background:var(--s2);border:1px solid var(--brd2);border-radius:5px;padding:5px 8px;font-size:10px;color:var(--text);font-family:var(--font);outline:none">
+    </div>
+    <button class="btn" onclick="syncAll()" style="font-size:10px;padding:5px 12px">↻ Sync Airtable</button>
+  </div>
+</div>
+
+<!-- ═══ CEO ═══ -->
+<div class="page active" id="page-ceo">
+  <div class="kpi-g" style="grid-template-columns:repeat(5,1fr)">
+    <div class="kpi"><div class="kpi-l">CA Contracté</div><div class="kpi-v am" id="ceo-c">0€</div><div class="kpi-d">ce mois</div></div>
+    <div class="kpi"><div class="kpi-l">CA Collecté</div><div class="kpi-v gr" id="ceo-col">0€</div><div class="kpi-d">encaissé</div></div>
+    <div class="kpi"><div class="kpi-l">Coûts fixes</div><div class="kpi-v rd" id="ceo-cost">0€</div><div class="kpi-d">mensuel</div></div>
+    <div class="kpi"><div class="kpi-l">Marge nette</div><div class="kpi-v gr" id="ceo-marge">0€</div><div class="kpi-d">collecté - coûts</div></div>
+    <div class="kpi"><div class="kpi-l">Taux closing</div><div class="kpi-v bl" id="ceo-taux">0%</div><div class="kpi-d">appels → signés</div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-h"><span class="card-t">Leads & Pipeline (Airtable)</span></div>
+      <div class="card-b">
+        <div class="fn-row"><span class="fn-lbl">Leads entrants</span><div class="fn-bg"><div class="fn-bar" id="fn-t" style="width:100%"></div></div><span class="fn-v" id="fv-t">0</span><span class="fn-p">100%</span></div>
+        <div class="fn-row"><span class="fn-lbl">Contactés</span><div class="fn-bg"><div class="fn-bar" id="fn-c" style="width:0%"></div></div><span class="fn-v" id="fv-c">0</span><span class="fn-p" id="fp-c">—</span></div>
+        <div class="fn-row"><span class="fn-lbl">Qualifiés</span><div class="fn-bg"><div class="fn-bar" id="fn-q" style="width:0%"></div></div><span class="fn-v" id="fv-q">0</span><span class="fn-p" id="fp-q">—</span></div>
+        <div class="fn-row"><span class="fn-lbl">Appels réservés</span><div class="fn-bg"><div class="fn-bar" id="fn-a" style="width:0%"></div></div><span class="fn-v" id="fv-a">0</span><span class="fn-p" id="fp-a">—</span></div>
+        <div class="fn-row"><span class="fn-lbl" style="color:var(--green)">Signés</span><div class="fn-bg"><div class="fn-bar" id="fn-s" style="width:0%;background:var(--green)"></div></div><span class="fn-v gr" id="fv-s">0</span><span class="fn-p" id="fp-s">—</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-t">CA par canal</span></div>
+      <div class="card-b" id="ceo-canal"><div class="empty">Sync Airtable</div></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-h"><span class="card-t">Équipe — Temps ce mois</span><span class="card-a" onclick="openTimeModal()">+ Saisir</span></div>
+      <div class="card-b" id="ceo-team"><div class="empty">Aucune donnée</div></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-t">Coûts fixes</span><span class="card-a" onclick="openCostModal()">+ Ajouter</span></div>
+      <div class="card-b" id="ceo-costs"><div class="empty">Aucun coût</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ORGANIQUE ═══ -->
+<div class="page" id="page-orga">
+  <div class="sec-hd"><div class="sec-t">ORGANIQUE</div><div class="sec-s">YouTube · Instagram · LinkedIn</div></div>
+  <div class="kpi-g">
+    <div class="kpi"><div class="kpi-l">CA Total</div><div class="kpi-v gr" id="o-ca">0€</div></div>
+    <div class="kpi"><div class="kpi-l">Vues totales</div><div class="kpi-v bl" id="o-vues">0</div></div>
+    <div class="kpi"><div class="kpi-l">CPV moyen</div><div class="kpi-v am" id="o-cpv">0€</div><div class="kpi-d">objectif 4€+</div></div>
+    <div class="kpi"><div class="kpi-l">Appels générés</div><div class="kpi-v" id="o-appels">0</div></div>
+    <div class="kpi"><div class="kpi-l">Temps travaillé</div><div class="kpi-v bl" id="o-temps">0h</div><div class="kpi-d">content operator</div></div>
+  </div>
+
+  <!-- Vue globale CA par canal -->
+  <div class="two-col" style="margin-bottom:16px">
+    <div class="card">
+      <div class="card-h"><span class="card-t">CA par canal — Vue globale</span></div>
+      <div class="card-b"><div class="chart-wrap"><canvas id="chart-ca-global"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-t">Top contenus convertissants</span></div>
+      <div class="card-b" id="top-contenus-global">
+        <div class="empty">Ajouter du contenu via les onglets</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stabs">
+    <div class="stab active" onclick="switchOrga('ytb',this)">YouTube</div>
+    <div class="stab" onclick="switchOrga('ig',this)">Instagram</div>
+    <div class="stab" onclick="switchOrga('li',this)">LinkedIn</div>
+    <div class="stab" onclick="switchOrga('tiktok',this)">TikTok</div>
+  </div>
+
+  <!-- YTB -->
+  <div id="o-ytb">
+    <div class="two-col">
+      <div class="card">
+        <div class="card-h"><span class="card-t">CA par chaîne YouTube</span></div>
+        <div class="card-b"><div class="chart-wrap"><canvas id="chart-ytb-ca"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span class="card-t">Top vidéos par CPV</span></div>
+        <div class="card-b" id="ytb-top-cpv"><div class="empty">Ajouter du contenu</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h">
+        <span class="card-t">Toutes les vidéos</span>
+        <div style="display:flex;gap:6px">
+          <select id="ytb-filter" onchange="renderYTB()" style="background:var(--s2);border:1px solid var(--brd);border-radius:4px;padding:3px 8px;font-size:10px;color:var(--text2);font-family:var(--font);outline:none">
+            <option value="">Tous les canaux</option>
+            <option value="ytb-valeur">Valeur</option>
+            <option value="ytb-podcast">Podcast</option>
+            <option value="ytb-raw">Raw</option>
+            <option value="ytb-temoignages">Témoignages</option>
+          </select>
+          <button class="btn btn-sm" onclick="openAddContent()">+ Ajouter</button>
+        </div>
+      </div>
+      <table><thead><tr><th>Titre</th><th>Canal</th><th>Date</th><th>Vues</th><th>CA</th><th>CPV</th><th>J+2</th><th>J+5</th><th>J+7</th><th>Temps</th><th></th></tr></thead>
+      <tbody id="ytb-table"><tr><td colspan="11" class="empty">Aucune vidéo</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- IG -->
+  <div id="o-ig" style="display:none">
+    <div class="two-col">
+      <div class="card">
+        <div class="card-h"><span class="card-t">Performance Instagram</span></div>
+        <div class="card-b"><div class="chart-wrap"><canvas id="chart-ig"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span class="card-t">KPIs Instagram</span></div>
+        <div class="card-b">
+          <div class="kpi-g" style="grid-template-columns:1fr 1fr;margin-bottom:0">
+            <div class="kpi"><div class="kpi-l">Abonnés</div><div class="kpi-v bl" id="ig-ab">0</div></div>
+            <div class="kpi"><div class="kpi-l">Clics lien bio</div><div class="kpi-v gr" id="ig-cl">0</div></div>
+            <div class="kpi"><div class="kpi-l">Reach moyen</div><div class="kpi-v" id="ig-rc">0</div></div>
+            <div class="kpi"><div class="kpi-l">% Nouvelles aud.</div><div class="kpi-v am" id="ig-nw">0%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h">
+        <span class="card-t">Réels Instagram</span>
+        <button class="btn btn-sm" onclick="openAddContent('instagram')">+ Ajouter réel</button>
+      </div>
+      <table><thead><tr><th>Hook / Titre</th><th>Type</th><th>Vues</th><th>Interactions</th><th>Clics VSL</th><th>CPV</th><th>J+2</th><th>J+5</th><th>J+7</th><th>Temps</th><th></th></tr></thead>
+      <tbody id="ig-table"><tr><td colspan="11" class="empty">Aucun réel</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- LI -->
+  <div id="o-li" style="display:none">
+    <div class="two-col">
+      <div class="card">
+        <div class="card-h"><span class="card-t">Performance LinkedIn</span></div>
+        <div class="card-b"><div class="chart-wrap"><canvas id="chart-li"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span class="card-t">KPIs LinkedIn</span></div>
+        <div class="card-b">
+          <div class="kpi-g" style="grid-template-columns:1fr 1fr;margin-bottom:0">
+            <div class="kpi"><div class="kpi-l">Abonnés</div><div class="kpi-v bl" id="li-ab">0</div></div>
+            <div class="kpi"><div class="kpi-l">Impressions</div><div class="kpi-v" id="li-im">0</div></div>
+            <div class="kpi"><div class="kpi-l">CA tracé</div><div class="kpi-v gr" id="li-ca">0€</div></div>
+            <div class="kpi"><div class="kpi-l">Appels générés</div><div class="kpi-v" id="li-ap">0</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-t">Posts LinkedIn</span><button class="btn btn-sm" onclick="openAddContent('linkedin')">+ Ajouter post</button></div>
+      <table><thead><tr><th>Titre</th><th>Impressions</th><th>Interactions</th><th>CA tracé</th><th>Appel ?</th><th>Temps</th><th></th></tr></thead>
+      <tbody id="li-table"><tr><td colspan="7" class="empty">Aucun post</td></tr></tbody></table>
+    </div>
+
+  <!-- TIKTOK -->
+  <div id="o-tiktok" style="display:none">
+    <div class="two-col">
+      <div class="card">
+        <div class="card-h"><span class="card-t">Performance TikTok</span></div>
+        <div class="card-b"><div class="chart-wrap"><canvas id="chart-tiktok"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span class="card-t">KPIs TikTok</span></div>
+        <div class="card-b">
+          <div class="kpi-g" style="grid-template-columns:1fr 1fr;margin-bottom:0">
+            <div class="kpi"><div class="kpi-l">Abonnés</div><div class="kpi-v bl" id="tt-ab">0</div></div>
+            <div class="kpi"><div class="kpi-l">Vues totales</div><div class="kpi-v" id="tt-vues">0</div></div>
+            <div class="kpi"><div class="kpi-l">CA tracé</div><div class="kpi-v gr" id="tt-ca">0€</div></div>
+            <div class="kpi"><div class="kpi-l">CPV moyen</div><div class="kpi-v am" id="tt-cpv">0€</div></div>
+            <div class="kpi"><div class="kpi-l">Interactions moy.</div><div class="kpi-v" id="tt-inter">0</div></div>
+            <div class="kpi"><div class="kpi-l">Appels générés</div><div class="kpi-v" id="tt-ap">0</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-t">Vidéos TikTok</span><button class="btn btn-sm" onclick="openAddContent('tiktok')">+ Ajouter vidéo</button></div>
+      <table><thead><tr><th>Titre</th><th>Vues</th><th>Interactions</th><th>CA tracé</th><th>CPV</th><th>J+2</th><th>J+5</th><th>J+7</th><th>Temps</th><th></th></tr></thead>
+      <tbody id="tt-table"><tr><td colspan="10" class="empty">Aucune vidéo TikTok</td></tr></tbody></table>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ═══ PROSPECTION ═══ -->
+<div class="page" id="page-prospect">
+  <div class="sec-hd"><div class="sec-t">PROSPECTION</div><div class="sec-s">EOD · Historique · CRM · Calendrier</div></div>
+  <div class="stabs">
+    <div class="stab active" onclick="switchProspect('eod',this)">📋 EOD Daily Report</div>
+    <div class="stab" onclick="switchProspect('histo',this)">📊 Historique</div>
+    <div class="stab" onclick="switchProspect('crm',this)">👥 CRM Prospects</div>
+    <div class="stab" onclick="switchProspect('cal',this)">📅 Calendrier Relances</div>
+  </div>
+
+  <!-- EOD -->
+  <div id="p-eod">
+    <div class="kpi-g" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kpi" style="border-color:rgba(65,105,225,.3)"><div class="kpi-l">Taux de réponse</div><div class="kpi-v bl" id="eod-tr">—</div><div class="kpi-d">Réponses / Messages</div></div>
+      <div class="kpi" style="border-color:rgba(245,158,11,.3)"><div class="kpi-l">Appels proposés / Qualifiés</div><div class="kpi-v am" id="eod-tp">—</div><div class="kpi-d">Propositions / Qualifiés</div></div>
+      <div class="kpi" style="border-color:rgba(34,197,94,.3)"><div class="kpi-l">Appels bookés / Qualifiés</div><div class="kpi-v gr" id="eod-tb">—</div><div class="kpi-d">Réservés / Qualifiés</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-h"><span class="card-t">Saisie du jour</span><span style="font-size:10px;color:var(--text3)" id="eod-date"></span></div>
+        <div class="card-b">
+          <div style="display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap">
+            <div class="tag t-ig" style="cursor:pointer;padding:3px 10px" data-c="Instagram" onclick="selCanal(this)">Instagram ✓</div>
+            <div class="tag t-bl" style="cursor:pointer;padding:3px 10px" data-c="LinkedIn" onclick="selCanal(this)">LinkedIn</div>
+            <div class="tag t-am" style="cursor:pointer;padding:3px 10px" data-c="Publicité" onclick="selCanal(this)">Publicité</div>
+            <div class="tag t-pu" style="cursor:pointer;padding:3px 10px" data-c="Skool" onclick="selCanal(this)">Skool</div>
+          </div>
+          <div class="fr" style="grid-template-columns:1fr 1fr 1fr">
+            <div class="fi"><div class="fl">Messages</div><input type="number" id="e-msg" placeholder="0" oninput="updateEOD()"></div>
+            <div class="fi"><div class="fl">Relances</div><input type="number" id="e-rel" placeholder="0" oninput="updateEOD()"></div>
+            <div class="fi"><div class="fl">Réponses</div><input type="number" id="e-rep" placeholder="0" oninput="updateEOD()"></div>
+            <div class="fi"><div class="fl">Conv. qualifiées</div><input type="number" id="e-qual" placeholder="0" oninput="updateEOD()"></div>
+            <div class="fi"><div class="fl">Propositions</div><input type="number" id="e-prop" placeholder="0" oninput="updateEOD()"></div>
+            <div class="fi"><div class="fl">Appels réservés</div><input type="number" id="e-appels" placeholder="0" oninput="updateEOD()"></div>
+          </div>
+          <div class="fi" style="margin-bottom:10px"><div class="fl">Temps travaillé (h)</div><input type="number" id="e-temps" placeholder="0" step="0.5"></div>
+          <button class="btn" onclick="submitEOD()" id="eod-btn" style="width:100%">Valider → Airtable</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span class="card-t">Funnel temps réel</span></div>
+        <div class="card-b">
+          <div style="margin-bottom:12px">
+            <div class="fn-row"><span class="fn-lbl">Messages</span><div class="fn-bg"><div class="fn-bar" id="eb-msg" style="width:100%"></div></div><span class="fn-v" id="ev-msg">0</span><span class="fn-p">—</span></div>
+            <div class="fn-row"><span class="fn-lbl">Réponses</span><div class="fn-bg"><div class="fn-bar" id="eb-rep" style="width:0%"></div></div><span class="fn-v" id="ev-rep">0</span><span class="fn-p" id="ep-rep">—</span></div>
+            <div class="fn-row"><span class="fn-lbl">Qualifiés</span><div class="fn-bg"><div class="fn-bar" id="eb-qual" style="width:0%"></div></div><span class="fn-v" id="ev-qual">0</span><span class="fn-p" id="ep-qual">—</span></div>
+            <div class="fn-row"><span class="fn-lbl">Propositions</span><div class="fn-bg"><div class="fn-bar" id="eb-prop" style="width:0%"></div></div><span class="fn-v" id="ev-prop">0</span><span class="fn-p" id="ep-prop">—</span></div>
+            <div class="fn-row"><span class="fn-lbl" style="color:var(--green)">Appels réservés</span><div class="fn-bg"><div class="fn-bar" id="eb-appels" style="width:0%;background:var(--green)"></div></div><span class="fn-v gr" id="ev-appels">0</span><span class="fn-p" id="ep-appels">—</span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;border-top:1px solid var(--brd);padding-top:10px">
+            <div style="text-align:center"><div style="font-size:8px;color:var(--text3);margin-bottom:2px">TX RÉPONSE</div><div style="font-size:16px;font-family:var(--font-d);color:var(--blue)" id="kt-r">—</div></div>
+            <div style="text-align:center"><div style="font-size:8px;color:var(--text3);margin-bottom:2px">PROP/QUAL</div><div style="font-size:16px;font-family:var(--font-d);color:var(--amber)" id="kt-p">—</div></div>
+            <div style="text-align:center"><div style="font-size:8px;color:var(--text3);margin-bottom:2px">BOOK/QUAL</div><div style="font-size:16px;font-family:var(--font-d);color:var(--green)" id="kt-b">—</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORIQUE -->
+  <div id="p-histo" style="display:none">
+    <div class="kpi-g">
+      <div class="kpi"><div class="kpi-l">Messages total</div><div class="kpi-v bl" id="h-msg">0</div></div>
+      <div class="kpi"><div class="kpi-l">Réponses</div><div class="kpi-v" id="h-rep">0</div><div class="kpi-d" id="h-rep-r">—</div></div>
+      <div class="kpi"><div class="kpi-l">Qualifiés</div><div class="kpi-v am" id="h-qual">0</div><div class="kpi-d" id="h-qual-r">—</div></div>
+      <div class="kpi"><div class="kpi-l">Appels réservés</div><div class="kpi-v gr" id="h-appels">0</div><div class="kpi-d" id="h-appels-r">—</div></div>
+      <div class="kpi"><div class="kpi-l">Meilleur jour</div><div class="kpi-v bl" id="h-best">0</div><div class="kpi-d">messages</div></div>
+      <div class="kpi"><div class="kpi-l">Jours trackés</div><div class="kpi-v" id="h-jours">0</div></div>
+    </div>
+    <div class="kpi-g" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kpi" style="border-color:rgba(65,105,225,.3)"><div class="kpi-l">Taux réponse cumulé</div><div class="kpi-v bl" id="h-tr">—</div></div>
+      <div class="kpi" style="border-color:rgba(245,158,11,.3)"><div class="kpi-l">Appels proposés / Qualifiés</div><div class="kpi-v am" id="h-tp">—</div></div>
+      <div class="kpi" style="border-color:rgba(34,197,94,.3)"><div class="kpi-l">Appels bookés / Qualifiés</div><div class="kpi-v gr" id="h-tb">—</div></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-t">Rapports EOD</span><span class="card-a" onclick="loadEOD()">↻ Sync</span></div>
+      <table><thead><tr><th>Date</th><th>Canal</th><th>Messages</th><th>Relances</th><th>Réponses</th><th>Qualifiés</th><th>Propositions</th><th>Appels</th><th>Temps</th><th>msg→appel</th></tr></thead>
+      <tbody id="h-table"><tr><td colspan="10" class="empty">Chargement...</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- CRM -->
+  <div id="p-crm" style="display:none">
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+      <input style="background:var(--s1);border:1px solid var(--brd);border-radius:5px;padding:6px 10px;font-size:11px;color:var(--text);font-family:var(--font);outline:none;width:180px" type="text" id="crm-s" placeholder="Rechercher..." oninput="renderCRM()">
+      <select style="background:var(--s1);border:1px solid var(--brd);border-radius:5px;padding:6px 10px;font-size:11px;color:var(--text);font-family:var(--font);outline:none" id="crm-sf" onchange="renderCRM()">
+        <option value="">Tous statuts</option>
+        <option>Potentiel</option><option>Contacté</option><option>Qualifié</option>
+        <option>Appel réservé</option><option>À relancer</option><option>Signé</option><option>Perdu</option>
+      </select>
+      <span style="font-size:10px;color:var(--text3)" id="crm-cnt">0 prospects</span>
+      <button class="btn btn-sm" onclick="openAddProspect()" style="margin-left:auto">+ Ajouter</button>
+      <span class="card-a" onclick="loadLeads()">↻ Sync</span>
+    </div>
+    <div id="crm-alert" style="display:none;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:7px;padding:9px 12px;font-size:11px;color:var(--amber);margin-bottom:10px;display:flex;align-items:center;gap:7px">
+      ⚠ <span id="crm-alert-t"></span>
+    </div>
+    <div class="card">
+      <table><thead><tr><th>Nom</th><th>Canal</th><th>Statut</th><th>Tél.</th><th>Relance</th><th>Source contenu</th><th>Notes</th><th></th></tr></thead>
+      <tbody id="crm-table"><tr><td colspan="8" class="empty">Chargement Airtable...</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- CALENDRIER -->
+  <div id="p-cal" style="display:none">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button class="btn-out" onclick="calPrev()">‹</button>
+      <button class="btn-out" onclick="calNext()">›</button>
+      <div style="font-family:var(--font-d);font-size:22px;letter-spacing:1px" id="cal-lbl"></div>
+      <button class="btn btn-sm" onclick="calToday()">Aujourd'hui</button>
+      <div style="margin-left:auto;font-size:10px;color:var(--text3)" id="cal-stats"></div>
+    </div>
+    <div class="cal-grid" id="cal-grid">
+      <div class="cal-day-name">Lun</div><div class="cal-day-name">Mar</div><div class="cal-day-name">Mer</div>
+      <div class="cal-day-name">Jeu</div><div class="cal-day-name">Ven</div><div class="cal-day-name">Sam</div><div class="cal-day-name">Dim</div>
+    </div>
+    <div class="unsched">
+      <div class="unsched-t"><span>Sans date de relance</span><span id="unsched-cnt" style="color:var(--amber)">0</span></div>
+      <div class="unsched-pills" id="unsched-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADS & EVENTS ═══ -->
+<div class="page" id="page-ads">
+  <div class="sec-hd"><div class="sec-t">PUBLICITÉS & ÉVÉNEMENTS</div><div class="sec-s">Meta Ads · Conférences en présentiel</div></div>
+  <div class="stabs">
+    <div class="stab active" onclick="switchAds('meta',this)">Meta Ads</div>
+    <div class="stab" onclick="switchAds('conf',this)">Conférences Présentiel</div>
+  </div>
+
+  <!-- META ADS -->
+  <div id="ads-meta">
+    <div class="kpi-g">
+      <div class="kpi">
+        <div class="kpi-l">CTR</div><div class="kpi-v" id="ads-ctr">0%</div>
+        <div class="kpi-indicator" id="ads-ctr-ind">—</div>
+        <div class="metric-ranges">
+          <div class="mrange"><div class="mrange-dot" style="background:var(--red)"></div><span style="font-size:8px;color:var(--text3)">Mauvais &lt;1%</span></div>
+          <div class="mrange"><div class="mrange-dot" style="background:var(--amber)"></div><span style="font-size:8px;color:var(--text3)">Correct 1-2%</span></div>
+          <div class="mrange"><div class="mrange-dot" style="background:var(--green)"></div><span style="font-size:8px;color:var(--text3)">Excellent +2%</span></div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-l">CPM</div><div class="kpi-v" id="ads-cpm">0€</div>
+        <div class="kpi-indicator" id="ads-cpm-ind">—</div>
+        <div class="metric-ranges">
+          <div class="mrange"><div class="mrange-dot" style="background:var(--green)"></div><span style="font-size:8px;color:var(--text3)">Bas &lt;8€</span></div>
+          <div class="mrange"><div class="mrange-dot" style="background:var(--red)"></div><span style="font-size:8px;color:var(--text3)">Haut +15€</span></div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-l">CPC</div><div class="kpi-v" id="ads-cpc">0€</div>
+        <div class="kpi-indicator" id="ads-cpc-ind">—</div>
+        <div class="metric-ranges">
+          <div class="mrange"><div class="mrange-dot" style="background:var(--green)"></div><span style="font-size:8px;color:var(--text3)">Très bon &lt;0.50€</span></div>
+          <div class="mrange"><div class="mrange-dot" style="background:var(--amber)"></div><span style="font-size:8px;color:var(--text3)">Moyen 0.50-1€</span></div>
+          <div class="mrange"><div class="mrange-dot" style="background:var(--red)"></div><span style="font-size:8px;color:var(--text3)">Mauvais +1€</span></div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-l">CPL</div><div class="kpi-v" id="ads-cpl">0€</div>
+        <div class="kpi-indicator" id="ads-cpl-ind">—</div>
+        <div class="metric-ranges">
+          <div class="mrange"><div class="mrange-dot" style="background:var(--green)"></div><span style="font-size:8px;color:var(--text3)">Excellent &lt;5€</span></div>
+          <div class="mrange"><div class="mrange-dot" style="background:var(--amber)"></div><span style="font-size:8px;color:var(--text3)">Correct 5-10€</span></div>
+          <div class="mrange"><div class="mrange-dot" style="background:var(--red)"></div><span style="font-size:8px;color:var(--text3)">Problème conv. +10€</span></div>
+        </div>
+      </div>
+      <div class="kpi"><div class="kpi-l">Budget dépensé</div><div class="kpi-v rd" id="ads-budget">0€</div></div>
+      <div class="kpi"><div class="kpi-l">ROAS</div><div class="kpi-v bl" id="ads-roas">0x</div><div class="kpi-d">objectif 3x+</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><span class="card-t">Ajouter une campagne</span></div>
+      <div class="card-b">
+        <div class="fr">
+          <div class="fi"><div class="fl">Nom / Hook</div><input type="text" id="ad-nom" placeholder="Pub crédibilité..."></div>
+          <div class="fi"><div class="fl">Type</div><select id="ad-type"><option>Crédibilité</option><option>Mécanisme</option><option>Preuve client</option><option>Direct response</option></select></div>
+          <div class="fi"><div class="fl">Budget (€)</div><input type="number" id="ad-budget" placeholder="0"></div>
+          <div class="fi"><div class="fl">Impressions</div><input type="number" id="ad-imp" placeholder="0"></div>
+          <div class="fi"><div class="fl">Clics</div><input type="number" id="ad-clics" placeholder="0"></div>
+          <div class="fi"><div class="fl">Leads générés</div><input type="number" id="ad-leads" placeholder="0"></div>
+          <div class="fi"><div class="fl">CA tracé (€)</div><input type="number" id="ad-ca" placeholder="0"></div>
+          <div class="fi"><div class="fl">Statut</div><select id="ad-statut"><option>Active</option><option>En test</option><option>Pausée</option><option>Arrêtée</option></select></div>
+        </div>
+        <button class="btn" onclick="addAd()" style="width:100%">Ajouter la campagne</button>
+      </div>
+    </div>
+
+    <div id="ads-alert" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:7px;padding:9px 12px;font-size:11px;color:var(--red);margin-bottom:10px"></div>
+
+    <div class="card">
+      <div class="card-h"><span class="card-t">Campagnes</span></div>
+      <table><thead><tr><th>Nom</th><th>Type</th><th>Budget</th><th>CTR</th><th>CPM</th><th>CPC</th><th>Leads</th><th>CPL</th><th>CA</th><th>ROAS</th><th>Statut</th></tr></thead>
+      <tbody id="ads-table"><tr><td colspan="11" class="empty">Aucune campagne</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- CONFÉRENCES PRÉSENTIEL -->
+  <div id="ads-conf" style="display:none">
+    <div class="kpi-g" style="grid-template-columns:repeat(5,1fr)">
+      <div class="kpi"><div class="kpi-l">Prospects touchés</div><div class="kpi-v bl" id="conf-prospects">0</div><div class="kpi-d">objectif max 10€/prospect</div></div>
+      <div class="kpi"><div class="kpi-l">% Présents qualifiés</div><div class="kpi-v am" id="conf-presence">0%</div><div class="kpi-d">objectif 25%</div></div>
+      <div class="kpi"><div class="kpi-l">% Prise de RDV</div><div class="kpi-v gr" id="conf-rdv">0%</div><div class="kpi-d">objectif 35%</div></div>
+      <div class="kpi"><div class="kpi-l">Coût / Présent</div><div class="kpi-v" id="conf-cpp">0€</div><div class="kpi-d">objectif max 35€</div></div>
+      <div class="kpi"><div class="kpi-l">Tél. décroché</div><div class="kpi-v gr" id="conf-tel">0%</div><div class="kpi-d">objectif 80/100</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><span class="card-t">Ajouter un événement présentiel</span></div>
+      <div class="card-b">
+        <div class="fr">
+          <div class="fi"><div class="fl">Nom événement</div><input type="text" id="conf-nom" placeholder="Conférence Paris..."></div>
+          <div class="fi"><div class="fl">Date</div><input type="date" id="conf-date"></div>
+          <div class="fi"><div class="fl">Ville</div><input type="text" id="conf-ville" placeholder="Paris"></div>
+          <div class="fi"><div class="fl">Budget pub (€)</div><input type="number" id="conf-budget" placeholder="0"></div>
+          <div class="fi"><div class="fl">Prospects inscrits</div><input type="number" id="conf-inscrits" placeholder="0"></div>
+          <div class="fi"><div class="fl">Présents qualifiés</div><input type="number" id="conf-pres" placeholder="0"></div>
+          <div class="fi"><div class="fl">RDV pris</div><input type="number" id="conf-rdvs" placeholder="0"></div>
+          <div class="fi"><div class="fl">Tél. décroché</div><input type="number" id="conf-tels" placeholder="0"></div>
+          <div class="fi"><div class="fl">CA généré (€)</div><input type="number" id="conf-ca" placeholder="0"></div>
+        </div>
+        <button class="btn" onclick="addConf()" style="width:100%">Ajouter l'événement</button>
+      </div>
+    </div>
+
+    <div id="conf-alerts" style="margin-bottom:12px"></div>
+
+    <div class="card">
+      <div class="card-h"><span class="card-t">Événements passés</span></div>
+      <table><thead><tr><th>Événement</th><th>Date</th><th>Inscrits</th><th>Présents %</th><th>RDV %</th><th>Coût/Prospect</th><th>Coût/Présent</th><th>Tel 80/100</th><th>CA</th><th>ROI</th></tr></thead>
+      <tbody id="conf-table"><tr><td colspan="10" class="empty">Aucun événement</td></tr></tbody></table>
+    </div>
+
+    <!-- Pub planning J-8 -->
+    <div class="card">
+      <div class="card-h"><span class="card-t">Planning pub — 8 jours avant l'événement</span><span class="card-a" onclick="togglePubPlan()">Afficher / Masquer</span></div>
+      <div id="pub-plan" style="display:none">
+        <div class="card-b">
+          <div class="conf-phase">
+            <div class="conf-phase-t"><span class="day-badge">J-8 à J-6</span> Notoriété — Phase de chauffe</div>
+            <p style="font-size:11px;color:var(--text2);line-height:1.6">Objectif : toucher un maximum de personnes. Ciblage large. Budget 30% du total. CTR cible : 1%+. Créatifs : contenu valeur, promesse de l'événement.</p>
+          </div>
+          <div class="conf-phase">
+            <div class="conf-phase-t"><span class="day-badge">J-5 à J-3</span> Considération — Inscriptions</div>
+            <p style="font-size:11px;color:var(--text2);line-height:1.6">Objectif : convertir les clics en inscriptions. CPL cible &lt;5€. Budget 50% du total. Retargeting des cliqueurs. Créatifs : preuve sociale, résultats clients, urgence.</p>
+          </div>
+          <div class="conf-phase">
+            <div class="conf-phase-t"><span class="day-badge">J-2 à J-1</span> Urgence — Rappel & Dernières places</div>
+            <p style="font-size:11px;color:var(--text2);line-height:1.6">Objectif : maximiser la présence. Budget 20% du total. Retargeting inscrits uniquement. SMS/email de rappel en parallèle. CPL peut monter — c'est normal.</p>
+          </div>
+          <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:6px;padding:10px;font-size:11px;color:var(--red)">
+            ⚠️ Si CPL augmente mais CTR stable → problème après le clic (page trop longue, formulaire pas clair). Vérifier la landing page.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ VENTE ═══ -->
+<div class="page" id="page-vente">
+  <div class="sec-hd"><div class="sec-t">APPELS & CLOSING</div><div class="sec-s">Analyse IA par framework — Leads Airtable</div></div>
+
+  <div class="kpi-g">
+    <div class="kpi"><div class="kpi-l">Appels tenus</div><div class="kpi-v bl" id="v-appels">0</div></div>
+    <div class="kpi"><div class="kpi-l">Taux de closing</div><div class="kpi-v gr" id="v-taux">0%</div><div class="kpi-d">objectif 40%+</div></div>
+    <div class="kpi"><div class="kpi-l">CA contracté</div><div class="kpi-v am" id="v-ca">0€</div></div>
+    <div class="kpi"><div class="kpi-l">Objection #1</div><div class="kpi-v" id="v-obj1" style="font-size:13px">—</div></div>
+    <div class="kpi"><div class="kpi-l">Score moyen IA</div><div class="kpi-v bl" id="v-score">—/10</div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-h"><span class="card-t">+ Nouveau call</span></div>
+      <div class="card-b">
+        <div class="fr">
+          <div class="fi"><div class="fl">Prospect (Airtable)</div>
+            <select id="call-prospect">
+              <option value="">Sélectionner ou saisir manuellement</option>
+            </select>
+          </div>
+          <div class="fi"><div class="fl">Nom (si non Airtable)</div><input type="text" id="call-nom" placeholder="Prénom Nom"></div>
+          <div class="fi"><div class="fl">Date</div><input type="date" id="call-date"></div>
+          <div class="fi"><div class="fl">Durée (min)</div><input type="number" id="call-duree" placeholder="45"></div>
+          <div class="fi"><div class="fl">Résultat</div>
+            <select id="call-result"><option>Signé</option><option>À relancer</option><option>Perdu</option></select>
+          </div>
+          <div class="fi"><div class="fl">Montant (€)</div><input type="number" id="call-montant" placeholder="0"></div>
+          <div class="fi"><div class="fl">Objection principale</div>
+            <select id="call-obj">
+              <option value="">— aucune</option>
+              <option>Prix</option><option>Pas le bon moment</option>
+              <option>Besoin de réfléchir</option><option>Pas convaincu du résultat</option>
+              <option>Conjoint</option><option>Autre</option>
+            </select>
+          </div>
+        </div>
+        <div class="fi" style="margin-bottom:10px">
+          <div class="fl">Transcript de l'appel</div>
+          <textarea id="call-transcript" placeholder="Colle le transcript ici (iClosed, Otter...) — l'IA analysera selon le framework Boosmentor" style="min-height:100px"></textarea>
+        </div>
+        <button class="btn" onclick="addCall()" id="call-btn" style="width:100%">Analyser par IA → Framework Boosmentor</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-t">Objections fréquentes</span></div>
+      <div class="card-b" id="obj-chart"><div class="empty">Aucun appel</div></div>
+    </div>
+  </div>
+
+  <!-- Calls list -->
+  <div id="calls-list"></div>
+</div>
+
+<!-- ═══ DOCS ═══ -->
+<div class="page" id="page-docs">
+  <div class="sec-hd"><div class="sec-t">DOCUMENTATION</div><div class="sec-s">Base de connaissance Boosmentor</div></div>
+  <div id="docs-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-bottom:16px"></div>
+  <div id="doc-viewer" style="display:none">
+    <button class="btn-out" onclick="closeDoc()" style="margin-bottom:10px">← Retour</button>
+    <div style="background:var(--s1);border:1px solid var(--brd);border-radius:8px;padding:20px;font-size:12px;color:var(--text2);line-height:1.7" id="doc-content"></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- MODALS -->
+<div class="moverlay" id="m-cost">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-t">Coût fixe mensuel</div><button class="modal-x" onclick="closeM('m-cost')">×</button></div>
+    <div class="fr">
+      <div class="fi"><div class="fl">Nom</div><input id="cost-nom" placeholder="Airtable, Make..."></div>
+      <div class="fi"><div class="fl">Catégorie</div><select id="cost-cat"><option>Outil SaaS</option><option>Publicité</option><option>Équipe</option><option>Hébergement</option><option>Autre</option></select></div>
+      <div class="fi"><div class="fl">Montant/mois (€)</div><input type="number" id="cost-amt" placeholder="0"></div>
+    </div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeM('m-cost')">Annuler</button><button class="btn" onclick="addCost()">Ajouter</button></div>
+  </div>
+</div>
+
+<div class="moverlay" id="m-time">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-t">Saisir temps équipe</div><button class="modal-x" onclick="closeM('m-time')">×</button></div>
+    <div class="fr">
+      <div class="fi"><div class="fl">Membre</div><select id="time-who"><option>Clément</option><option>Setter</option><option>Content Operator</option><option>Assistante</option></select></div>
+      <div class="fi"><div class="fl">Heures travaillées</div><input type="number" id="time-hrs" placeholder="0" step="0.5"></div>
+      <div class="fi"><div class="fl">Tâche principale</div><select id="time-task"><option>Stratégie</option><option>Prospection</option><option>Montage</option><option>Tournage</option><option>Admin</option><option>Closing</option></select></div>
+      <div class="fi"><div class="fl">Date</div><input type="date" id="time-date"></div>
+    </div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeM('m-time')">Annuler</button><button class="btn" onclick="addTime()">Ajouter</button></div>
+  </div>
+</div>
+
+<div class="moverlay" id="m-prospect">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-t" id="p-modal-t">Nouveau prospect</div><button class="modal-x" onclick="closeM('m-prospect')">×</button></div>
+    <input type="hidden" id="p-rid">
+    <div class="fr">
+      <div class="fi"><div class="fl">Nom</div><input id="p-nom" placeholder="@username"></div>
+      <div class="fi"><div class="fl">Téléphone</div><input id="p-tel" placeholder="+33..."></div>
+      <div class="fi"><div class="fl">Email</div><input type="email" id="p-email"></div>
+      <div class="fi"><div class="fl">Canal</div><select id="p-canal"><option>Instagram</option><option>LinkedIn</option><option>Publicité</option><option>Skool</option><option>iClosed</option></select></div>
+      <div class="fi"><div class="fl">Statut</div><select id="p-statut"><option>Potentiel</option><option>Contacté</option><option>Qualifié</option><option>Appel réservé</option><option>À relancer</option><option>Signé</option><option>Perdu</option></select></div>
+      <div class="fi"><div class="fl">Relance</div><input type="date" id="p-relance"></div>
+      <div class="fi" style="grid-column:1/-1"><div class="fl">Source contenu</div><input id="p-src" placeholder="Réel IG setter erreur n°1"></div>
+      <div class="fi" style="grid-column:1/-1"><div class="fl">Notes</div><textarea id="p-notes" style="min-height:60px"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="p-del" onclick="deleteProspect()" style="display:none;color:var(--red)">Supprimer</button>
+      <button class="btn-cancel" onclick="closeM('m-prospect')">Annuler</button>
+      <button class="btn" onclick="saveProspect()" id="p-save">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="moverlay" id="m-content">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-t">Ajouter un contenu</div><button class="modal-x" onclick="closeM('m-content')">×</button></div>
+    <div class="fr">
+      <div class="fi" style="grid-column:1/-1"><div class="fl">Titre</div><input id="c-titre" placeholder="Comment scaler à 10K..."></div>
+      <div class="fi"><div class="fl">Canal</div>
+        <select id="c-canal" onchange="toggleEssai()">
+          <option value="ytb-valeur">YTB · Valeur</option><option value="ytb-podcast">YTB · Podcast</option>
+          <option value="ytb-raw">YTB · Raw</option><option value="ytb-temoignages">YTB · Témoignages</option>
+          <option value="instagram">Instagram · Réel</option><option value="linkedin">LinkedIn</option>
+          <option value="tiktok">TikTok</option>
+        </select>
+      </div>
+      <div class="fi"><div class="fl">Date pub.</div><input type="date" id="c-date"></div>
+      <div class="fi"><div class="fl">Vues</div><input type="number" id="c-vues" placeholder="0"></div>
+      <div class="fi"><div class="fl">CA tracé (€)</div><input type="number" id="c-ca" placeholder="0"></div>
+      <div class="fi"><div class="fl">Interactions</div><input type="number" id="c-inter" placeholder="0"></div>
+      <div class="fi"><div class="fl">Clics VSL</div><input type="number" id="c-clics" placeholder="0"></div>
+      <div class="fi"><div class="fl">Temps travaillé (h)</div><input type="number" id="c-temps" placeholder="0" step="0.5"></div>
+      <div class="fi" id="c-essai-wrap" style="display:none"><div class="fl">Type de réel</div><select id="c-essai"><option value="">Réel normal</option><option value="essai">Réel d'essai</option></select></div>
+    </div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeM('m-content')">Annuler</button><button class="btn" onclick="addContent()">Ajouter</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ CONFIG ═══════════════════════════════════════════════════
+const AT='pat2HBwxBq9Yui3YK.60413e681b9aa13f425d23dfb861b4ddfc8bd13d62dceaf5a927f73f510be6ed';
+const BID='appcoXmZ3k9S1pcso';
+const TL='tbl3yRvWU0WKQ93bF', TV='tbl0HBKnvQ7saJgaO', TE='tblshJoq1gJfC8JPf';
+const FL={nom:'fldSFtgynzaXcxa20',tel:'fldCfZW7gWgig8x2F',email:'fldCa0MN5qCYrbhiR',
+  statut:'fldZAKunF3916maLj',canal:'fldnzjRJTWvYdTlel',src:'fldjAoRkOOabnC5KM',
+  dateEntree:'fldQcu7TPKlytv4bY',relance:'fld9pbasxzy7EilFa',notes:'fldBvLKqruCBf8r5p'};
+const FE={date:'fldK1cn1SqrcDPD3k',canal:'fld7TCYlFsU0l9ydM',msg:'fldLP8lsVUnufuCbR',
+  rel:'fldlaacQuGWAZdpqC',rep:'fld1BXaQ1TI8jwSua',qual:'fldtyfs52U4BQHlKM',
+  prop:'fld31IRHXFVFXvyf5',appels:'fldbhyN7sjfIHmAMa'};
+
+// Framework scoring Boosmentor (basé sur tableau d'évaluation closing)
+const FRAMEWORK = {
+  categories:[
+    {name:'Accroche & Connexion',pts:15,criteria:['Personnalise l\'appel en utilisant le prénom et contexte','Crée une connexion humaine avant de commencer','Pose des questions ouvertes sur la situation actuelle','Valide activement ce que le prospect dit','Ton chaleureux et confiant dès le départ']},
+    {name:'Découverte & Qualification',pts:20,criteria:['Identifie le CA actuel et la cible','Comprend les obstacles précis qui bloquent','Explore les conséquences de ne rien faire','Valide que le prospect a déjà essayé quelque chose','Confirme le budget et la capacité de décision']},
+    {name:'Présentation de l\'offre',pts:20,criteria:['Présente les 3 piliers clairement (présuasion, setter, tracking)','Relie chaque pilier au problème identifié','Utilise les cas clients pertinents (Mathieu, Yann, Simon, Ethan)','Annonce le prix avec confiance sans hésitation','Justifie le ROI par rapport au CA actuel vs cible']},
+    {name:'Gestion des objections',pts:25,criteria:['Ne contredit pas directement — reformule et comprend','Utilise le reframe pour le prix','Isole l\'objection réelle avant de répondre','Utilise la preuve sociale pour les doutes sur les résultats','Conclut chaque réponse en revenant à la décision']},
+    {name:'Closing',pts:20,criteria:['Demande la décision clairement sans tourner autour','Propose un plan de paiement si hésitation','Crée l\'urgence sans pression artificielle','Confirme le prochain pas concret','Gère le silence après la question de closing']}
+  ]
+};
+
+// ═══ STATE ═══════════════════════════════════════════════════
+let leads=[], ventes=[], eodHistory=[];
+let videos=JSON.parse(localStorage.getItem('bm_v')||'[]');
+let metrics=JSON.parse(localStorage.getItem('bm_m')||'{}');
+let costs=JSON.parse(localStorage.getItem('bm_c')||'[]');
+let timeEntries=JSON.parse(localStorage.getItem('bm_t')||'[]');
+let calls=JSON.parse(localStorage.getItem('bm_calls')||'[]');
+let ads=JSON.parse(localStorage.getItem('bm_ads')||'[]');
+let confs=JSON.parse(localStorage.getItem('bm_confs')||'[]');
+let currentEODCanal='Instagram';
+let calY=new Date().getFullYear(), calM=new Date().getMonth();
+const today=new Date().toISOString().split('T')[0];
+let charts={};
+
+function saveL(){
+  localStorage.setItem('bm_v',JSON.stringify(videos));
+  localStorage.setItem('bm_m',JSON.stringify(metrics));
+  localStorage.setItem('bm_c',JSON.stringify(costs));
+  localStorage.setItem('bm_t',JSON.stringify(timeEntries));
+  localStorage.setItem('bm_calls',JSON.stringify(calls));
+  localStorage.setItem('bm_ads',JSON.stringify(ads));
+  localStorage.setItem('bm_confs',JSON.stringify(confs));
+}
+
+// ═══ AIRTABLE ═════════════════════════════════════════════════
+async function aF(path,opts={}){
+  try{
+    const r=await fetch('https://api.airtable.com/v0/'+BID+'/'+path,{...opts,headers:{'Authorization':'Bearer '+AT,'Content-Type':'application/json',...(opts.headers||{})}});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return await r.json();
+  }catch(e){toast('Airtable: '+e.message,true);throw e;}
+}
+async function aAll(tid,qs=''){
+  let recs=[],off=null;
+  do{const d=await aF(tid+'?pageSize=100'+qs+(off?'&offset='+off:''));recs=recs.concat(d.records||[]);off=d.offset;}while(off);
+  return recs;
+}
+
+async function syncAll(){
+  document.getElementById('sync-lbl').textContent='Sync...';
+  try{
+    await Promise.all([loadLeads(),loadEOD()]);
+    document.getElementById('sync-lbl').textContent='Airtable ✓';
+    document.getElementById('sync-date').textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    refreshCEO(); toast('Synchronisé');
+  }catch(e){document.getElementById('sync-lbl').textContent='Erreur';}
+}
+
+async function loadLeads(){
+  const recs=await aAll(TL);
+  leads=recs.map(r=>({id:r.id,nom:r.fields[FL.nom]||'',tel:r.fields[FL.tel]||'',email:r.fields[FL.email]||'',
+    statut:r.fields[FL.statut]||'',canal:r.fields[FL.canal]||'',src:r.fields[FL.src]||'',
+    relance:r.fields[FL.relance]||'',notes:r.fields[FL.notes]||'',dateEntree:r.fields[FL.dateEntree]||''}));
+  renderCRM(); renderCal(); populateProspectSelect(); return leads;
+}
+
+async function loadEOD(){
+  const recs=await aAll(TE,'&sort[0][field]='+FE.date+'&sort[0][direction]=desc');
+  eodHistory=recs.map(r=>({date:r.fields[FE.date]||'',canal:r.fields[FE.canal]||'',
+    msg:r.fields[FE.msg]||0,rel:r.fields[FE.rel]||0,rep:r.fields[FE.rep]||0,
+    qual:r.fields[FE.qual]||0,prop:r.fields[FE.prop]||0,appels:r.fields[FE.appels]||0}));
+  renderHisto(); return eodHistory;
+}
+
+// ═══ UTILS ════════════════════════════════════════════════════
+function fmt(n){return n>=1000?(n/1000).toFixed(1)+'K':String(n);}
+function fE(n){return (n||0).toLocaleString('fr-FR')+'€';}
+function pct(a,b){return b>0?Math.round(a/b*100)+'%':'—';}
+function gv(id){return parseInt(document.getElementById(id).value)||0;}
+function gf(id){return parseFloat(document.getElementById(id).value)||0;}
+function s(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function toast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(err?' err':'');setTimeout(()=>t.className='toast',2800);}
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+
+// ═══ NAV ══════════════════════════════════════════════════════
+const PTitles={ceo:'DASHBOARD CEO',orga:'ACQUISITION · ORGANIQUE',prospect:'ACQUISITION · PROSPECTION',
+  ads:'PUBLICITÉS & ÉVÉNEMENTS',vente:'VENTE · APPELS & CLOSING',docs:'DOCUMENTATION'};
+
+function nav(p,el){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  if(el) el.classList.add('active');
+  s('page-title',PTitles[p]||p.toUpperCase());
+  if(p==='ceo') refreshCEO();
+  if(p==='orga'){refreshOrga();renderCharts();}
+  if(p==='prospect'){updateEOD();document.getElementById('eod-date').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});}
+  if(p==='ads') refreshAds();
+  if(p==='vente'){renderCalls();populateProspectSelect();}
+  if(p==='docs') renderDocs();
+}
+
+function onPeriodChange(){
+  const v=document.getElementById('period-sel').value;
+  const cd=document.getElementById('custom-dates');
+  cd.style.display=v==='custom'?'flex':'none';
+}
+
+// ═══ CEO ══════════════════════════════════════════════════════
+function refreshCEO(){
+  const totalCosts=costs.reduce((s,c)=>s+c.amount,0);
+  const totalCA=calls.filter(c=>c.result==='Signé').reduce((s,c)=>s+(c.montant||0),0);
+  const signes=leads.filter(l=>l.statut==='Signé').length;
+  const appels=calls.length;
+  s('ceo-c',fE(totalCA));
+  s('ceo-col',fE(totalCA));
+  s('ceo-cost',fE(totalCosts));
+  s('ceo-marge',fE(totalCA-totalCosts));
+  s('ceo-taux',pct(signes,appels));
+
+  // Funnel
+  const total=leads.length,max=Math.max(total,1);
+  const contact=leads.filter(l=>['Contacté','Qualifié','Appel réservé','Signé'].includes(l.statut)).length;
+  const qual=leads.filter(l=>['Qualifié','Appel réservé','Signé'].includes(l.statut)).length;
+  const appel=leads.filter(l=>['Appel réservé','Signé'].includes(l.statut)).length;
+  [['t',total,100],['c',contact,contact/max*100],['q',qual,qual/max*100],['a',appel,appel/max*100],['s',signes,signes/max*100]].forEach(([k,v,w])=>{
+    s('fv-'+k,v);
+    const b=document.getElementById('fn-'+k);if(b)b.style.width=w+'%';
+    if(k!=='t'){s('fp-'+k,pct(v,total));}
+  });
+
+  // Canal CA (from calls)
+  const colors={Instagram:'#EC4899',LinkedIn:'#0A66C2',Publicité:'#F59E0B',Skool:'#8B5CF6',iClosed:'#4169E1'};
+  const canalData={};
+  leads.filter(l=>l.statut==='Signé').forEach(l=>{canalData[l.canal||'Autre']=(canalData[l.canal||'Autre']||0)+1;});
+  const maxC=Math.max(...Object.values(canalData),1);
+  const canalEl=document.getElementById('ceo-canal');
+  canalEl.innerHTML=Object.keys(canalData).length===0?'<div class="empty">Aucune vente</div>'
+    :Object.entries(canalData).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+      <div class="src-row"><div class="src-dot" style="background:${colors[k]||'#4169E1'}"></div>
+      <div class="src-nm">${k}</div><div class="src-bg"><div class="src-fill" style="width:${(v/maxC*100).toFixed(0)}%;background:${colors[k]||'#4169E1'}"></div></div>
+      <div class="src-v">${v} deal${v>1?'s':''}</div></div>`).join('');
+
+  // Costs
+  const costsEl=document.getElementById('ceo-costs');
+  costsEl.innerHTML=costs.length===0?'<div class="empty">Aucun coût — + Ajouter</div>'
+    :costs.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--brd)">
+      <div><div style="font-size:11px;font-weight:600">${c.nom}</div><div style="font-size:9px;color:var(--text3)">${c.cat}</div></div>
+      <div style="font-size:12px;font-weight:700;color:var(--red);font-family:var(--font-m)">-${fE(c.amount)}</div></div>`).join('')
+    +`<div style="display:flex;justify-content:space-between;padding-top:8px"><span style="font-size:10px;color:var(--text3)">Total</span><span style="font-size:13px;font-weight:700;color:var(--red);font-family:var(--font-m)">-${fE(totalCosts)}/mois</span></div>`;
+
+  // Team time
+  const teamEl=document.getElementById('ceo-team');
+  const teamColors={Clément:'#4169E1',Setter:'#22C55E','Content Operator':'#F59E0B',Assistante:'#8B5CF6'};
+  const teamHrs={};
+  timeEntries.forEach(t=>{teamHrs[t.who]=(teamHrs[t.who]||0)+t.hrs;});
+  const maxHrs=Math.max(...Object.values(teamHrs),1);
+  teamEl.innerHTML=Object.keys(teamHrs).length===0?'<div class="empty">Saisir le temps équipe</div>'
+    :Object.entries(teamHrs).map(([k,v])=>`<div class="time-row">
+      <div class="time-avatar" style="background:${teamColors[k]||'#4169E1'}22;color:${teamColors[k]||'#4169E1'}">${k.slice(0,2).toUpperCase()}</div>
+      <div class="time-name">${k}</div>
+      <div><div class="time-hrs" style="color:${teamColors[k]||'#4169E1'}">${v}h</div>
+      <div class="time-bar-bg"><div class="time-bar" style="width:${(v/maxHrs*100).toFixed(0)}%;background:${teamColors[k]||'#4169E1'}"></div></div></div>
+      </div>`).join('')
+    +`<div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--brd)"><span style="font-size:10px;color:var(--text3)">Total</span><span style="font-size:11px;font-weight:700;color:var(--text);font-family:var(--font-m)">${Object.values(teamHrs).reduce((a,b)=>a+b,0)}h</span></div>`;
+}
+
+function openCostModal(){openM('m-cost');}
+function addCost(){
+  const nom=document.getElementById('cost-nom').value.trim();
+  if(!nom){toast('Nom requis',true);return;}
+  costs.push({nom,cat:document.getElementById('cost-cat').value,amount:gf('cost-amt')});
+  saveL();refreshCEO();closeM('m-cost');
+  document.getElementById('cost-nom').value='';document.getElementById('cost-amt').value='';
+  toast('Coût ajouté');
+}
+function openTimeModal(){document.getElementById('time-date').value=today;openM('m-time');}
+function addTime(){
+  timeEntries.push({who:document.getElementById('time-who').value,hrs:gf('time-hrs'),task:document.getElementById('time-task').value,date:document.getElementById('time-date').value||today});
+  saveL();refreshCEO();closeM('m-time');toast('Temps enregistré');
+}
+
+// ═══ ORGANIQUE ════════════════════════════════════════════════
+function switchOrga(tab,el){
+  ['ytb','ig','li','tiktok'].forEach(t=>{const e=document.getElementById('o-'+t);if(e)e.style.display=t===tab?'block':'none';});
+  document.querySelectorAll('#page-orga .stab').forEach(x=>x.classList.remove('active'));
+  if(el)el.classList.add('active');
+  if(tab==='ytb')renderYTB();
+  if(tab==='ig')renderIG();
+  if(tab==='li')renderLI();
+  if(tab==='tiktok')renderTikTok();
+}
+
+function refreshOrga(){
+  const totalCA=videos.reduce((s,v)=>s+v.ca,0);
+  const totalVues=videos.reduce((s,v)=>s+v.vues,0);
+  const avgCPV=totalVues>0?(totalCA/totalVues).toFixed(2):0;
+  const totalAppels=videos.filter(v=>v.source).length;
+  const totalTemps=videos.reduce((s,v)=>s+(v.temps||0),0);
+  s('o-ca',fE(totalCA));s('o-vues',fmt(totalVues));s('o-cpv',avgCPV+'€');s('o-appels',totalAppels);s('o-temps',totalTemps+'h');
+  renderYTB();
+}
+
+function renderYTB(){
+  const filter=document.getElementById('ytb-filter')?.value||'';
+  const vids=videos.filter(v=>v.canal&&v.canal.startsWith('ytb')&&(filter===''||v.canal===filter));
+  const tbl=document.getElementById('ytb-table');
+  tbl.innerHTML=vids.length===0?'<tr><td colspan="11" class="empty">Aucune vidéo</td></tr>'
+    :[...vids].sort((a,b)=>b.cpv-a.cpv).map((v,i)=>`<tr>
+      <td>${v.titre.length>32?v.titre.slice(0,32)+'…':v.titre}</td>
+      <td><span class="tag t-bl" style="font-size:8px">${v.canal.replace('ytb-','')}</span></td>
+      <td style="font-size:10px">${v.date}</td>
+      <td>${fmt(v.vues)}</td><td>${fE(v.ca)}</td>
+      <td style="color:var(--${v.cpv>=4?'green':v.cpv>=2?'amber':'red'});font-family:var(--font-m)">${v.cpv}€</td>
+      <td>${cpB(v,'j2')}</td><td>${cpB(v,'j5')}</td><td>${cpB(v,'j7')}</td>
+      <td style="font-size:10px;color:var(--text3)">${v.temps?v.temps+'h':'—'}</td>
+      <td><button class="btn-out" onclick="editContent(${videos.indexOf(v)})" style="padding:2px 7px;font-size:9px">✎</button></td>
+    </tr>`).join('');
+
+  const top5=videos.filter(v=>v.canal.startsWith('ytb')&&v.vues>0).sort((a,b)=>b.cpv-a.cpv).slice(0,5);
+  const topEl=document.getElementById('ytb-top-cpv');
+  topEl.innerHTML=top5.length===0?'<div class="empty">Aucune vidéo</div>'
+    :top5.map(v=>`<div class="src-row"><div class="src-dot" style="background:var(--blue)"></div>
+      <div class="src-nm" style="font-size:11px">${v.titre.length>26?v.titre.slice(0,26)+'…':v.titre}</div>
+      <div class="src-bg"><div class="src-fill" style="width:${Math.min(v.cpv/8*100,100).toFixed(0)}%;background:var(--blue)"></div></div>
+      <div class="src-v">${v.cpv}€</div></div>`).join('');
+}
+
+function renderIG(){
+  const vids=videos.filter(v=>v.canal==='instagram');
+  const m=metrics['instagram']||{};
+  s('ig-ab',fmt(m.abonnes||0));s('ig-cl',fmt(vids.reduce((s,v)=>s+v.clics,0)));
+  s('ig-rc',fmt(vids.length>0?(vids.reduce((s,v)=>s+v.vues,0)/vids.length).toFixed(0):0));
+  s('ig-nw',(m.newAud||0)+'%');
+  const tbl=document.getElementById('ig-table');
+  tbl.innerHTML=vids.length===0?'<tr><td colspan="11" class="empty">Aucun réel</td></tr>'
+    :[...vids].sort((a,b)=>b.vues-a.vues).map(v=>`<tr>
+      <td>${v.titre.length>28?v.titre.slice(0,28)+'…':v.titre}</td>
+      <td><span class="tag ${v.essai?'t-am':'t-bl'}" style="font-size:8px">${v.essai?'Essai':'Normal'}</span></td>
+      <td>${fmt(v.vues)}</td><td>${v.inter||'—'}</td><td>${v.clics||'—'}</td>
+      <td style="color:var(--${v.cpv>=4?'green':v.cpv>=2?'amber':'red'});font-family:var(--font-m)">${v.cpv}€</td>
+      <td>${cpB(v,'j2')}</td><td>${cpB(v,'j5')}</td><td>${cpB(v,'j7')}</td>
+      <td style="font-size:10px;color:var(--text3)">${v.temps?v.temps+'h':'—'}</td>
+      <td><button class="btn-out" onclick="editContent(${videos.indexOf(v)})" style="padding:2px 7px;font-size:9px">✎</button></td>
+    </tr>`).join('');
+}
+
+function renderLI(){
+  const vids=videos.filter(v=>v.canal==='linkedin');
+  const m=metrics['linkedin']||{};
+  s('li-ab',fmt(m.abonnes||0));
+  s('li-im',fmt(vids.reduce((s,v)=>s+v.vues,0)));
+  s('li-ca',fE(vids.reduce((s,v)=>s+v.ca,0)));
+  s('li-ap',m.appels||0);
+  const tbl=document.getElementById('li-table');
+  tbl.innerHTML=vids.length===0?'<tr><td colspan="7" class="empty">Aucun post</td></tr>'
+    :vids.map(v=>`<tr>
+      <td>${v.titre.length>30?v.titre.slice(0,30)+'…':v.titre}</td>
+      <td>${fmt(v.vues)}</td><td>${v.inter}</td><td>${fE(v.ca)}</td>
+      <td>${v.source?'<span class="tag t-gr">Oui</span>':'—'}</td>
+      <td style="font-size:10px;color:var(--text3)">${v.temps?v.temps+'h':'—'}</td>
+      <td><button class="btn-out" onclick="editContent(${videos.indexOf(v)})" style="padding:2px 7px;font-size:9px">✎</button></td>
+    </tr>`).join('');
+}
+
+
+function renderTikTok(){
+  const vids=videos.filter(v=>v.canal==='tiktok');
+  const m=metrics['tiktok']||{};
+  const totalCA=vids.reduce((s,v)=>s+v.ca,0);
+  const totalVues=vids.reduce((s,v)=>s+v.vues,0);
+  const avgCPV=totalVues>0?(totalCA/totalVues).toFixed(2):0;
+  const avgInter=vids.length>0?(vids.reduce((s,v)=>s+v.inter,0)/vids.length).toFixed(0):0;
+  s('tt-ab',fmt(m.abonnes||0));
+  s('tt-vues',fmt(totalVues));
+  s('tt-ca',fE(totalCA));
+  s('tt-cpv',avgCPV+'€');
+  s('tt-inter',avgInter);
+  s('tt-ap',m.appels||0);
+  const tbl=document.getElementById('tt-table');
+  if(tbl)tbl.innerHTML=vids.length===0?'<tr><td colspan="10" class="empty">Aucune vidéo TikTok</td></tr>'
+    :[...vids].sort((a,b)=>b.vues-a.vues).map(v=>`<tr>
+      <td>${v.titre.length>28?v.titre.slice(0,28)+'…':v.titre}</td>
+      <td>${fmt(v.vues)}</td><td>${v.inter||'—'}</td><td>${fE(v.ca)}</td>
+      <td style="color:var(--${v.cpv>=4?'green':v.cpv>=2?'amber':'red'});font-family:var(--font-m)">${v.cpv}€</td>
+      <td>${cpB(v,'j2')}</td><td>${cpB(v,'j5')}</td><td>${cpB(v,'j7')}</td>
+      <td style="font-size:10px;color:var(--text3)">${v.temps?v.temps+'h':'—'}</td>
+      <td><button class="btn-out" onclick="editContent(${videos.indexOf(v)})" style="padding:2px 7px;font-size:9px">✎</button></td>
+    </tr>`).join('');
+  // TikTok chart
+  const ctx=document.getElementById('chart-tiktok');
+  if(ctx&&vids.length>0){
+    if(charts.tiktok)charts.tiktok.destroy();
+    charts.tiktok=new Chart(ctx,{type:'bar',data:{labels:vids.slice(-8).map(v=>v.titre.slice(0,14)+'…'),datasets:[{label:'Vues',data:vids.slice(-8).map(v=>v.vues),backgroundColor:'rgba(0,0,0,.7)',borderColor:'#69C9D0',borderWidth:2,borderRadius:4},{label:'Interactions',data:vids.slice(-8).map(v=>v.inter),backgroundColor:'rgba(238,29,82,.3)',borderColor:'#EE1D52',borderWidth:2,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#A0A0C0',font:{size:10}}}},scales:{x:{ticks:{color:'#A0A0C0',font:{size:9}}},y:{ticks:{color:'#A0A0C0',font:{size:10}}}}}});
+  }
+}
+
+function renderCharts(){
+  // YTB CA by channel
+  const ytbCh=['ytb-valeur','ytb-podcast','ytb-raw','ytb-temoignages'];
+  const ytbLabels=['Valeur','Podcast','Raw','Témoignages'];
+  const ytbCA=ytbCh.map(c=>videos.filter(v=>v.canal===c).reduce((s,v)=>s+v.ca,0));
+  const ctx1=document.getElementById('chart-ytb-ca');
+  if(ctx1){
+    if(charts.ytbCa) charts.ytbCa.destroy();
+    charts.ytbCa=new Chart(ctx1,{type:'bar',data:{labels:ytbLabels,datasets:[{data:ytbCA,backgroundColor:['#4169E1','#22C55E','#F59E0B','#8B5CF6'],borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(65,105,225,0.08)'},ticks:{color:'#A0A0C0',font:{size:10}}},y:{grid:{color:'rgba(65,105,225,0.08)'},ticks:{color:'#A0A0C0',font:{size:10},callback:v=>v+'€'}}}}});
+  }
+  // IG perf
+  const igVids=videos.filter(v=>v.canal==='instagram').slice(-10);
+  const ctx2=document.getElementById('chart-ig');
+  if(ctx2&&igVids.length>0){
+    if(charts.ig) charts.ig.destroy();
+    charts.ig=new Chart(ctx2,{type:'line',data:{labels:igVids.map(v=>v.titre.slice(0,12)+'…'),datasets:[{label:'Vues',data:igVids.map(v=>v.vues),borderColor:'#EC4899',backgroundColor:'rgba(236,72,153,.1)',tension:0.4,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#A0A0C0',font:{size:9}}},y:{ticks:{color:'#A0A0C0',font:{size:10}}}}}});
+  }
+  // Global CA by channel chart
+  const chanLabels=['YTB Valeur','YTB Podcast','YTB Raw','Témoignages','Instagram','LinkedIn','TikTok'];
+  const chanKeys=['ytb-valeur','ytb-podcast','ytb-raw','ytb-temoignages','instagram','linkedin','tiktok'];
+  const chanColors=['#4169E1','#22C55E','#F59E0B','#8B5CF6','#EC4899','#0A66C2','#69C9D0'];
+  const chanCA=chanKeys.map(k=>videos.filter(v=>v.canal===k).reduce((s,v)=>s+v.ca,0));
+  const ctxG=document.getElementById('chart-ca-global');
+  if(ctxG){
+    if(charts.caGlobal)charts.caGlobal.destroy();
+    charts.caGlobal=new Chart(ctxG,{type:'doughnut',data:{labels:chanLabels,datasets:[{data:chanCA,backgroundColor:chanColors,borderColor:'rgba(8,8,16,.8)',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#A0A0C0',font:{size:10},boxWidth:10,padding:8}}}}});
+  }
+  // Top contenus globally
+  const topAll=[...videos].filter(v=>v.vues>0).sort((a,b)=>b.cpv-a.cpv).slice(0,6);
+  const topEl=document.getElementById('top-contenus-global');
+  if(topEl)topEl.innerHTML=topAll.length===0?'<div class="empty">Ajouter du contenu</div>'
+    :topAll.map(v=>`<div class="src-row"><div class="src-dot" style="background:${chanColors[chanKeys.indexOf(v.canal)]||'#4169E1'}"></div>
+      <div class="src-nm" style="font-size:10px">${v.titre.length>24?v.titre.slice(0,24)+'…':v.titre}</div>
+      <div class="src-bg"><div class="src-fill" style="width:${Math.min(v.cpv/8*100,100).toFixed(0)}%;background:${chanColors[chanKeys.indexOf(v.canal)]||'#4169E1'}"></div></div>
+      <div class="src-v">${v.cpv}€ CPV</div></div>`).join('');
+
+  // LI impressions
+  const liVids=videos.filter(v=>v.canal==='linkedin').slice(-10);
+  const ctx3=document.getElementById('chart-li');
+  if(ctx3&&liVids.length>0){
+    if(charts.li) charts.li.destroy();
+    charts.li=new Chart(ctx3,{type:'bar',data:{labels:liVids.map(v=>v.titre.slice(0,14)+'…'),datasets:[{label:'Impressions',data:liVids.map(v=>v.vues),backgroundColor:'rgba(10,102,194,.6)',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#A0A0C0',font:{size:9}}},y:{ticks:{color:'#A0A0C0',font:{size:10}}}}}});
+  }
+}
+
+function cpB(v,cp){
+  const d={'j2':2,'j5':5,'j7':7}[cp];if(!d)return'—';
+  const due=new Date(v.date);due.setDate(due.getDate()+d);
+  const filled=v.checkpoints&&v.checkpoints[cp]&&Object.values(v.checkpoints[cp]).some(x=>x>0);
+  if(filled)return'<span style="color:var(--green);font-size:10px">✓</span>';
+  if(new Date()>=due)return'<span style="color:var(--amber);font-size:10px">!</span>';
+  return'<span style="color:var(--text3);font-size:10px">·</span>';
+}
+
+function toggleEssai(){
+  const canal=document.getElementById('c-canal').value;
+  document.getElementById('c-essai-wrap').style.display=canal==='instagram'?'flex':'none';
+}
+
+function openAddContent(canal){
+  if(canal)document.getElementById('c-canal').value=canal;
+  document.getElementById('c-date').value=today;
+  toggleEssai();
+  openM('m-content');
+}
+
+function addContent(){
+  const titre=document.getElementById('c-titre').value.trim();
+  const canal=document.getElementById('c-canal').value;
+  if(!titre||!canal){toast('Titre requis',true);return;}
+  const v={titre,canal,date:document.getElementById('c-date').value||today,
+    vues:gv('c-vues'),ca:gv('c-ca'),inter:gv('c-inter'),clics:gv('c-clics'),
+    temps:gf('c-temps'),
+    essai:canal==='instagram'&&document.getElementById('c-essai').value==='essai',
+    checkpoints:{j1:{},j2:{},j5:{},j7:{}}};
+  v.cpv=v.vues>0?(v.ca/v.vues).toFixed(2):0;
+  videos.push(v);saveL();refreshOrga();renderCharts();closeM('m-content');toast('Contenu ajouté');
+}
+
+function editContent(idx){
+  const v=videos[idx];if(!v)return;
+  document.getElementById('c-titre').value=v.titre;
+  document.getElementById('c-canal').value=v.canal;
+  document.getElementById('c-date').value=v.date;
+  document.getElementById('c-vues').value=v.vues;
+  document.getElementById('c-ca').value=v.ca;
+  document.getElementById('c-inter').value=v.inter;
+  document.getElementById('c-clics').value=v.clics;
+  document.getElementById('c-temps').value=v.temps||0;
+  if(v.essai)document.getElementById('c-essai').value='essai';
+  toggleEssai();
+  // Override save to update
+  document.querySelector('#m-content .btn').onclick=()=>{
+    v.titre=document.getElementById('c-titre').value.trim();
+    v.canal=document.getElementById('c-canal').value;
+    v.date=document.getElementById('c-date').value;
+    v.vues=gv('c-vues');v.ca=gv('c-ca');v.inter=gv('c-inter');
+    v.clics=gv('c-clics');v.temps=gf('c-temps');
+    v.essai=v.canal==='instagram'&&document.getElementById('c-essai').value==='essai';
+    v.cpv=v.vues>0?(v.ca/v.vues).toFixed(2):0;
+    saveL();refreshOrga();renderCharts();closeM('m-content');toast('Contenu mis à jour');
+    document.querySelector('#m-content .btn').onclick=addContent;
+  };
+  openM('m-content');
+}
+
+// ═══ EOD ══════════════════════════════════════════════════════
+function selCanal(el){
+  document.querySelectorAll('#p-eod .tag').forEach(t=>{t.textContent=t.dataset.c;});
+  el.textContent=el.dataset.c+' ✓';
+  currentEODCanal=el.dataset.c;
+}
+
+function updateEOD(){
+  const msg=gv('e-msg'),rep=gv('e-rep'),qual=gv('e-qual'),prop=gv('e-prop'),appels=gv('e-appels');
+  const max=Math.max(msg,1);
+  s('ev-msg',msg);s('ev-rep',rep);s('ev-qual',qual);s('ev-prop',prop);s('ev-appels',appels);
+  s('ep-rep',pct(rep,msg));s('ep-qual',pct(qual,rep));s('ep-prop',pct(prop,qual));s('ep-appels',pct(appels,prop));
+  document.getElementById('eb-rep').style.width=(rep/max*100)+'%';
+  document.getElementById('eb-qual').style.width=(qual/max*100)+'%';
+  document.getElementById('eb-prop').style.width=(prop/max*100)+'%';
+  document.getElementById('eb-appels').style.width=(appels/max*100)+'%';
+  s('kt-r',pct(rep,msg));s('kt-p',pct(prop,qual));s('kt-b',pct(appels,qual));
+  s('eod-tr',pct(rep,msg));s('eod-tp',pct(prop,qual));s('eod-tb',pct(appels,qual));
+}
+
+async function submitEOD(){
+  if(!gv('e-msg')){toast('Messages requis',true);return;}
+  const btn=document.getElementById('eod-btn');btn.disabled=true;btn.textContent='Envoi...';
+  try{
+    await aF(TE,{method:'POST',body:JSON.stringify({records:[{fields:{
+      [FE.date]:today,[FE.canal]:currentEODCanal,
+      [FE.msg]:gv('e-msg'),[FE.rel]:gv('e-rel'),[FE.rep]:gv('e-rep'),
+      [FE.qual]:gv('e-qual'),[FE.prop]:gv('e-prop'),[FE.appels]:gv('e-appels')
+    }}]})});
+    // Save temps setting
+    const tps=gf('e-temps');
+    if(tps>0){timeEntries.push({who:'Setter',hrs:tps,task:'Prospection',date:today});saveL();}
+    ['e-msg','e-rel','e-rep','e-qual','e-prop','e-appels','e-temps'].forEach(id=>document.getElementById(id).value='');
+    updateEOD();toast('Rapport envoyé dans Airtable !');
+  }finally{btn.disabled=false;btn.textContent='Valider → Airtable';}
+}
+
+// ═══ HISTORIQUE ═══════════════════════════════════════════════
+function renderHisto(){
+  const tMsg=eodHistory.reduce((s,r)=>s+r.msg,0);
+  const tRep=eodHistory.reduce((s,r)=>s+r.rep,0);
+  const tQual=eodHistory.reduce((s,r)=>s+r.qual,0);
+  const tProp=eodHistory.reduce((s,r)=>s+r.prop,0);
+  const tApp=eodHistory.reduce((s,r)=>s+r.appels,0);
+  s('h-msg',tMsg);s('h-rep',tRep);s('h-qual',tQual);s('h-appels',tApp);
+  s('h-best',eodHistory.length>0?Math.max(...eodHistory.map(r=>r.msg)):0);
+  s('h-jours',eodHistory.length);
+  s('h-rep-r',pct(tRep,tMsg)+' taux');s('h-qual-r',pct(tQual,tRep)+' taux');
+  s('h-appels-r',pct(tApp,tProp)+' taux');
+  s('h-tr',pct(tRep,tMsg));s('h-tp',pct(tProp,tQual));s('h-tb',pct(tApp,tQual));
+  const ct={Instagram:'<span class="tag t-ig">IG</span>',LinkedIn:'<span class="tag t-li">LI</span>',
+    Publicité:'<span class="tag t-am">Pub</span>',Skool:'<span class="tag t-pu">Skool</span>',
+    'iClosed potentiel':'<span class="tag t-bl">iClosed</span>'};
+  document.getElementById('h-table').innerHTML=eodHistory.length===0
+    ?'<tr><td colspan="10" class="empty">Aucun rapport</td></tr>'
+    :eodHistory.map(r=>`<tr>
+      <td>${r.date}</td><td>${ct[r.canal]||r.canal}</td>
+      <td style="color:var(--blue);font-weight:600">${r.msg}</td><td>${r.rel}</td>
+      <td>${r.rep} <span style="font-size:9px;color:var(--text3)">${pct(r.rep,r.msg)}</span></td>
+      <td style="color:var(--amber);font-weight:600">${r.qual} <span style="font-size:9px;color:var(--text3)">${pct(r.qual,r.rep)}</span></td>
+      <td>${r.prop}</td>
+      <td style="color:var(--green);font-weight:600">${r.appels}</td>
+      <td style="font-size:9px;color:var(--text3)">—</td>
+      <td style="font-family:var(--font-m);font-size:10px">${pct(r.appels,r.msg)}</td>
+    </tr>`).join('');
+}
+
+function switchProspect(tab,el){
+  ['eod','histo','crm','cal'].forEach(t=>{const e=document.getElementById('p-'+t);if(e)e.style.display=t===tab?'block':'none';});
+  document.querySelectorAll('#page-prospect .stab').forEach(x=>x.classList.remove('active'));
+  if(el)el.classList.add('active');
+  if(tab==='histo'&&eodHistory.length===0)loadEOD();
+  if(tab==='crm')renderCRM();
+  if(tab==='cal')renderCal();
+}
+
+// ═══ CRM ══════════════════════════════════════════════════════
+const sCls={Potentiel:'t-bl',Contacté:'t-am',Qualifié:'t-pu','Appel réservé':'t-gr','À relancer':'t-am',Signé:'t-gr',Perdu:'t-rd'};
+const cTag={Instagram:'<span class="tag t-ig">IG</span>',LinkedIn:'<span class="tag t-li">LI</span>',Publicité:'<span class="tag t-am">Pub</span>',Skool:'<span class="tag t-pu">Skool</span>',iClosed:'<span class="tag t-bl">iClosed</span>'};
+
+function renderCRM(){
+  const sr=document.getElementById('crm-s')?.value.toLowerCase()||'';
+  const sf=document.getElementById('crm-sf')?.value||'';
+  const f=leads.filter(p=>(!sr||p.nom.toLowerCase().includes(sr)||p.tel.includes(sr))&&(!sf||p.statut===sf));
+  const due=leads.filter(p=>p.relance&&p.relance<=today&&p.statut!=='Signé'&&p.statut!=='Perdu');
+  s('crm-cnt',f.length+' prospect'+(f.length>1?'s':''));
+  const al=document.getElementById('crm-alert');
+  if(due.length>0){al.style.display='flex';s('crm-alert-t',due.length+' prospect'+(due.length>1?'s':'')+' à relancer aujourd\'hui');}
+  else al.style.display='none';
+  const tbl=document.getElementById('crm-table');
+  tbl.innerHTML=f.length===0?'<tr><td colspan="8" class="empty">Aucun prospect — Sync ou + Ajouter</td></tr>'
+    :f.map(p=>{const isDue=p.relance&&p.relance<=today&&p.statut!=='Signé'&&p.statut!=='Perdu';
+      return `<tr style="${isDue?'background:rgba(245,158,11,.04)':''}">
+        <td>${p.nom}</td><td>${cTag[p.canal]||p.canal||'—'}</td>
+        <td><span class="tag ${sCls[p.statut]||''}">${p.statut||'—'}</span></td>
+        <td style="font-family:var(--font-m);font-size:10px">${p.tel||'—'}</td>
+        <td style="${isDue?'color:var(--amber);font-weight:600':''}">${p.relance||'—'}</td>
+        <td style="font-size:10px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.src||'—'}</td>
+        <td style="font-size:10px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text3)">${p.notes||'—'}</td>
+        <td><button class="btn-out" onclick="openEditProspect('${p.id}')" style="padding:3px 8px;font-size:9px">Ouvrir</button></td>
+      </tr>`;
+    }).join('');
+}
+
+function openAddProspect(){
+  document.getElementById('p-modal-t').textContent='Nouveau prospect';
+  document.getElementById('p-del').style.display='none';
+  document.getElementById('p-rid').value='';
+  ['p-nom','p-tel','p-email','p-src','p-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('p-canal').value='Instagram';
+  document.getElementById('p-statut').value='Potentiel';
+  document.getElementById('p-relance').value='';
+  openM('m-prospect');
+}
+
+function openEditProspect(id){
+  const p=leads.find(l=>l.id===id);if(!p)return;
+  document.getElementById('p-modal-t').textContent='Modifier le prospect';
+  document.getElementById('p-del').style.display='inline-flex';
+  document.getElementById('p-rid').value=id;
+  document.getElementById('p-nom').value=p.nom;
+  document.getElementById('p-tel').value=p.tel;
+  document.getElementById('p-email').value=p.email;
+  document.getElementById('p-canal').value=p.canal||'Instagram';
+  document.getElementById('p-statut').value=p.statut||'Potentiel';
+  document.getElementById('p-relance').value=p.relance||'';
+  document.getElementById('p-src').value=p.src||'';
+  document.getElementById('p-notes').value=p.notes||'';
+  openM('m-prospect');
+}
+
+async function saveProspect(){
+  const nom=document.getElementById('p-nom').value.trim();
+  if(!nom){toast('Nom requis',true);return;}
+  const btn=document.getElementById('p-save');btn.disabled=true;btn.textContent='Save...';
+  const rid=document.getElementById('p-rid').value;
+  const fields={[FL.nom]:nom,[FL.statut]:document.getElementById('p-statut').value,[FL.canal]:document.getElementById('p-canal').value};
+  const tel=document.getElementById('p-tel').value,email=document.getElementById('p-email').value;
+  const src=document.getElementById('p-src').value,notes=document.getElementById('p-notes').value;
+  const relance=document.getElementById('p-relance').value;
+  if(tel)fields[FL.tel]=tel;if(email)fields[FL.email]=email;
+  if(src)fields[FL.src]=src;if(notes)fields[FL.notes]=notes;
+  if(relance)fields[FL.relance]=relance;if(!rid)fields[FL.dateEntree]=today;
+  try{
+    if(rid)await aF(TL+'/'+rid,{method:'PATCH',body:JSON.stringify({fields})});
+    else await aF(TL,{method:'POST',body:JSON.stringify({records:[{fields}]})});
+    await loadLeads();closeM('m-prospect');toast(rid?'Mis à jour !':'Ajouté dans Airtable !');
+  }finally{btn.disabled=false;btn.textContent='Enregistrer';}
+}
+
+async function deleteProspect(){
+  const rid=document.getElementById('p-rid').value;
+  if(!rid||!confirm('Supprimer ?'))return;
+  await aF(TL+'/'+rid,{method:'DELETE'});
+  await loadLeads();closeM('m-prospect');toast('Supprimé');
+}
+
+// ═══ CALENDRIER ═══════════════════════════════════════════════
+const MFR=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+function calPrev(){calM--;if(calM<0){calM=11;calY--;}renderCal();}
+function calNext(){calM++;if(calM>11){calM=0;calY++;}renderCal();}
+function calToday(){calY=new Date().getFullYear();calM=new Date().getMonth();renderCal();}
+
+function renderCal(){
+  s('cal-lbl',MFR[calM]+' '+calY);
+  const first=new Date(calY,calM,1),last=new Date(calY,calM+1,0);
+  const sdow=(first.getDay()+6)%7;
+  const grid=document.getElementById('cal-grid');
+  const hdrs=[...grid.querySelectorAll('.cal-day-name')];
+  grid.innerHTML='';hdrs.forEach(h=>grid.appendChild(h));
+  const rmap={};
+  leads.forEach(p=>{if(p.relance){if(!rmap[p.relance])rmap[p.relance]=[];rmap[p.relance].push(p);}});
+  const dueT=leads.filter(p=>p.relance===today&&p.statut!=='Signé'&&p.statut!=='Perdu').length;
+  const dueM=leads.filter(p=>p.relance&&p.relance.startsWith(calY+'-'+String(calM+1).padStart(2,'0'))).length;
+  s('cal-stats',dueT+" auj. · "+dueM+' ce mois');
+  const prevL=new Date(calY,calM,0).getDate();
+  for(let i=0;i<sdow;i++){const d=document.createElement('div');d.className='cal-day other-m';d.innerHTML='<div class="cal-dn">'+(prevL-sdow+1+i)+'</div>';grid.appendChild(d);}
+  for(let day=1;day<=last.getDate();day++){
+    const ds=calY+'-'+String(calM+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+    const isT=ds===today,isPast=ds<today;
+    const d=document.createElement('div');d.className='cal-day'+(isT?' today':'');
+    let h='<div class="cal-dn">'+day+'</div>';
+    const items=rmap[ds]||[];
+    items.slice(0,3).forEach(p=>{
+      const cls=isPast&&p.statut!=='Signé'&&p.statut!=='Perdu'?'cp-overdue':isT?'cp-today':'cp-future';
+      h+='<div class="cal-pill '+cls+'" onclick="openEditProspect(\''+p.id+'\')">'+p.nom+'</div>';
+    });
+    if(items.length>3)h+='<div style="font-size:7px;color:var(--text3)">+'+(items.length-3)+'</div>';
+    d.innerHTML=h;grid.appendChild(d);
+  }
+  const tot=sdow+last.getDate(),rem=tot%7===0?0:7-(tot%7);
+  for(let i=1;i<=rem;i++){const d=document.createElement('div');d.className='cal-day other-m';d.innerHTML='<div class="cal-dn">'+i+'</div>';grid.appendChild(d);}
+  const unsched=leads.filter(p=>!p.relance&&p.statut!=='Signé'&&p.statut!=='Perdu');
+  s('unsched-cnt',unsched.length);
+  document.getElementById('unsched-list').innerHTML=unsched.length===0?'<span style="font-size:11px;color:var(--text3)">Tous ont une date</span>'
+    :unsched.map(p=>'<div class="unsched-pill" onclick="openEditProspect(\''+p.id+'\')">'+p.nom+'</div>').join('');
+}
+
+// ═══ ADS ══════════════════════════════════════════════════════
+function switchAds(tab,el){
+  ['meta','conf'].forEach(t=>{document.getElementById('ads-'+t).style.display=t===tab?'block':'none';});
+  document.querySelectorAll('#page-ads .stab').forEach(x=>x.classList.remove('active'));
+  if(el)el.classList.add('active');
+}
+
+function indClass(v,good,ok){return v<=good?'good':v<=ok?'warn':'bad';}
+function indLabel(v,good,ok,goodL,okL,badL){return v<=good?goodL:v<=ok?okL:badL;}
+
+function refreshAds(){
+  const totalBudget=ads.reduce((s,a)=>s+a.budget,0);
+  const totalLeads=ads.reduce((s,a)=>s+a.leads,0);
+  const totalImp=ads.reduce((s,a)=>s+(a.impressions||0),0);
+  const totalClics=ads.reduce((s,a)=>s+(a.clics||0),0);
+  const totalCA=ads.reduce((s,a)=>s+a.ca,0);
+  const ctr=totalImp>0?(totalClics/totalImp*100).toFixed(2):0;
+  const cpm=totalImp>0?(totalBudget/totalImp*1000).toFixed(2):0;
+  const cpc=totalClics>0?(totalBudget/totalClics).toFixed(2):0;
+  const cpl=totalLeads>0?(totalBudget/totalLeads).toFixed(2):0;
+  const roas=totalBudget>0?(totalCA/totalBudget).toFixed(1):0;
+
+  s('ads-ctr',ctr+'%');s('ads-cpm',cpm+'€');s('ads-cpc',cpc+'€');s('ads-cpl',cpl+'€');
+  s('ads-budget',fE(totalBudget));s('ads-roas',roas+'x');
+
+  const ctrEl=document.getElementById('ads-ctr-ind');
+  if(ctrEl){ctrEl.className='kpi-indicator '+(ctr>=2?'good':ctr>=1?'warn':'bad');ctrEl.textContent=ctr>=2?'Excellent':ctr>=1?'Correct':'Mauvais';}
+  const cpmEl=document.getElementById('ads-cpm-ind');
+  if(cpmEl){cpmEl.className='kpi-indicator '+(cpm<=8?'good':cpm<=15?'warn':'bad');cpmEl.textContent=cpm<=8?'Bas':cpm<=15?'Moyen':'Haut';}
+  const cpcEl=document.getElementById('ads-cpc-ind');
+  if(cpcEl){cpcEl.className='kpi-indicator '+(cpc<=0.5?'good':cpc<=1?'warn':'bad');cpcEl.textContent=cpc<=0.5?'Très bon':cpc<=1?'Moyen':'Mauvais';}
+  const cplEl=document.getElementById('ads-cpl-ind');
+  if(cplEl){cplEl.className='kpi-indicator '+(cpl<=5?'good':cpl<=10?'warn':'bad');cplEl.textContent=cpl<=5?'Excellent':cpl<=10?'Correct':'Prob. conversion';}
+
+  // Alert if CPL up but CTR stable
+  const alertEl=document.getElementById('ads-alert');
+  if(alertEl&&cpl>10&&ctr>=1){alertEl.style.display='block';alertEl.textContent='⚠️ CPL élevé ('+cpl+'€) mais CTR correct ('+ctr+'%) → Problème après le clic : vérifier page de capture / formulaire.';}
+  else if(alertEl)alertEl.style.display='none';
+
+  const tbl=document.getElementById('ads-table');
+  tbl.innerHTML=ads.length===0?'<tr><td colspan="11" class="empty">Aucune campagne</td></tr>'
+    :ads.map(a=>{
+      const actr=a.impressions>0?(a.clics/a.impressions*100).toFixed(2):0;
+      const acpm=a.impressions>0?(a.budget/a.impressions*1000).toFixed(2):0;
+      const acpc=a.clics>0?(a.budget/a.clics).toFixed(2):0;
+      const acpl=a.leads>0?(a.budget/a.leads).toFixed(2):0;
+      const aroas=a.budget>0?(a.ca/a.budget).toFixed(1):0;
+      return `<tr>
+        <td>${a.nom}</td><td><span class="tag t-bl">${a.type}</span></td>
+        <td style="font-family:var(--font-m)">${fE(a.budget)}</td>
+        <td class="${actr>=2?'t-gr':actr>=1?'t-am':'t-rd'}" style="font-family:var(--font-m)">${actr}%</td>
+        <td style="font-family:var(--font-m)">${acpm}€</td>
+        <td class="${acpc<=0.5?'t-gr':acpc<=1?'t-am':'t-rd'}" style="font-family:var(--font-m)">${acpc}€</td>
+        <td>${a.leads}</td>
+        <td class="${acpl<=5?'t-gr':acpl<=10?'t-am':'t-rd'}" style="font-family:var(--font-m)">${acpl}€</td>
+        <td style="font-family:var(--font-m)">${fE(a.ca)}</td>
+        <td class="${aroas>=3?'t-gr':'t-rd'}" style="font-family:var(--font-m)">${aroas}x</td>
+        <td><span class="tag ${a.statut==='Active'?'t-gr':a.statut==='Pausée'?'t-am':'t-rd'}">${a.statut}</span></td>
+      </tr>`;
+    }).join('');
+}
+
+function addAd(){
+  const nom=document.getElementById('ad-nom').value.trim();
+  if(!nom){toast('Nom requis',true);return;}
+  ads.push({nom,type:document.getElementById('ad-type').value,
+    budget:gv('ad-budget'),impressions:gv('ad-imp'),clics:gv('ad-clics'),
+    leads:gv('ad-leads'),ca:gv('ad-ca'),statut:document.getElementById('ad-statut').value});
+  saveL();refreshAds();
+  ['ad-nom','ad-budget','ad-imp','ad-clics','ad-leads','ad-ca'].forEach(id=>document.getElementById(id).value='');
+  toast('Campagne ajoutée');
+}
+
+// CONFÉRENCES
+function addConf(){
+  const nom=document.getElementById('conf-nom').value.trim();
+  if(!nom){toast('Nom requis',true);return;}
+  confs.push({nom,date:document.getElementById('conf-date').value,ville:document.getElementById('conf-ville').value,
+    budget:gv('conf-budget'),inscrits:gv('conf-inscrits'),presents:gv('conf-pres'),
+    rdvs:gv('conf-rdvs'),tels:gv('conf-tels'),ca:gv('conf-ca')});
+  saveL();refreshConfs();
+  ['conf-nom','conf-budget','conf-inscrits','conf-pres','conf-rdvs','conf-tels','conf-ca'].forEach(id=>document.getElementById(id).value='');
+  toast('Événement ajouté');
+}
+
+function refreshConfs(){
+  const total=confs.reduce((s,c)=>s+c.inscrits,0);
+  const totalPres=confs.reduce((s,c)=>s+c.presents,0);
+  const totalRdv=confs.reduce((s,c)=>s+c.rdvs,0);
+  const totalBudget=confs.reduce((s,c)=>s+c.budget,0);
+  const totalTels=confs.reduce((s,c)=>s+c.tels,0);
+  const coutProspe=total>0?(totalBudget/total).toFixed(2):0;
+  const coutPres=totalPres>0?(totalBudget/totalPres).toFixed(2):0;
+  s('conf-prospects',total);
+  s('conf-presence',pct(totalPres,total));
+  s('conf-rdv',pct(totalRdv,totalPres));
+  s('conf-cpp',coutPres+'€');
+  s('conf-tel',pct(totalTels,total*100/100));
+
+  // Alerts
+  const al=document.getElementById('conf-alerts');
+  const alerts=[];
+  if(coutProspe>10)alerts.push(`⚠️ Coût par prospect : ${coutProspe}€ (objectif max 10€)`);
+  if(coutPres>35)alerts.push(`⚠️ Coût par présent : ${coutPres}€ (objectif max 35€)`);
+  if(totalPres>0&&totalPres/total<0.25)alerts.push(`⚠️ Taux de présence : ${pct(totalPres,total)} (objectif 25%+)`);
+  if(totalRdv>0&&totalRdv/totalPres<0.35)alerts.push(`⚠️ Taux de RDV : ${pct(totalRdv,totalPres)} (objectif 35%+)`);
+  al.innerHTML=alerts.map(a=>`<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--red);margin-bottom:6px">${a}</div>`).join('');
+
+  const tbl=document.getElementById('conf-table');
+  tbl.innerHTML=confs.length===0?'<tr><td colspan="10" class="empty">Aucun événement</td></tr>'
+    :confs.map(c=>{
+      const cpp=c.inscrits>0?(c.budget/c.inscrits).toFixed(2):0;
+      const cppres=c.presents>0?(c.budget/c.presents).toFixed(2):0;
+      const tel80=Math.round(c.tels/Math.max(c.inscrits,1)*100);
+      const roi=c.budget>0?(c.ca/c.budget).toFixed(1):0;
+      return `<tr>
+        <td>${c.nom}</td><td>${c.date}</td><td>${c.inscrits}</td>
+        <td class="${c.presents/Math.max(c.inscrits,1)>=0.25?'':''}">
+          ${c.presents} <span style="font-size:9px;color:${c.presents/Math.max(c.inscrits,1)>=0.25?'var(--green)':'var(--red)'}">${pct(c.presents,c.inscrits)}</span>
+        </td>
+        <td>${c.rdvs} <span style="font-size:9px;color:${c.rdvs/Math.max(c.presents,1)>=0.35?'var(--green)':'var(--red)'}">${pct(c.rdvs,c.presents)}</span></td>
+        <td style="color:${cpp<=10?'var(--green)':'var(--red)'};font-family:var(--font-m)">${cpp}€</td>
+        <td style="color:${cppres<=35?'var(--green)':'var(--red)'};font-family:var(--font-m)">${cppres}€</td>
+        <td style="color:${tel80>=80?'var(--green)':'var(--red)'}">${tel80}/100</td>
+        <td style="font-family:var(--font-m)">${fE(c.ca)}</td>
+        <td style="color:${roi>=3?'var(--green)':'var(--red)'};font-family:var(--font-m)">${roi}x</td>
+      </tr>`;
+    }).join('');
+}
+
+function togglePubPlan(){
+  const p=document.getElementById('pub-plan');
+  p.style.display=p.style.display==='none'?'block':'none';
+}
+
+// ═══ VENTE ════════════════════════════════════════════════════
+function populateProspectSelect(){
+  const sel=document.getElementById('call-prospect');
+  if(!sel)return;
+  sel.innerHTML='<option value="">Sélectionner un prospect Airtable</option>'
+    +leads.map(l=>'<option value="'+l.id+'">'+l.nom+(l.tel?' — '+l.tel:'')+'</option>').join('');
+}
+
+function renderCalls(){
+  const total=calls.length,signes=calls.filter(c=>c.result==='Signé').length;
+  const totalCA=calls.filter(c=>c.result==='Signé').reduce((s,c)=>s+(c.montant||0),0);
+  const avgScore=calls.filter(c=>c.score).length>0?(calls.filter(c=>c.score).reduce((s,c)=>s+c.score,0)/calls.filter(c=>c.score).length).toFixed(1):null;
+  const objCounts={};
+  calls.filter(c=>c.obj).forEach(c=>{objCounts[c.obj]=(objCounts[c.obj]||0)+1;});
+  const topObj=Object.entries(objCounts).sort((a,b)=>b[1]-a[1])[0];
+  s('v-appels',total);s('v-taux',pct(signes,total));s('v-ca',fE(totalCA));
+  s('v-obj1',topObj?topObj[0]:'—');s('v-score',avgScore?avgScore+'/10':'—');
+
+  const maxO=Math.max(...Object.values(objCounts),1);
+  const objColors={Prix:'#EF4444','Pas le bon moment':'#F59E0B','Besoin de réfléchir':'#8B5CF6','Pas convaincu du résultat':'#4169E1',Conjoint:'#EC4899',Autre:'#A0A0C0'};
+  document.getElementById('obj-chart').innerHTML=Object.keys(objCounts).length===0?'<div class="empty">Aucune objection</div>'
+    :Object.entries(objCounts).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+      <div class="src-row"><div class="src-dot" style="background:${objColors[k]||'#4169E1'}"></div>
+      <div class="src-nm">${k}</div><div class="src-bg"><div class="src-fill" style="width:${(v/maxO*100).toFixed(0)}%;background:${objColors[k]||'#4169E1'}"></div></div>
+      <div class="src-v">${v} fois</div></div>`).join('');
+
+  const listEl=document.getElementById('calls-list');
+  listEl.innerHTML=calls.length===0?''
+    :calls.slice().reverse().map((c,i)=>{
+      const sc=c.score||0;
+      const scColor=sc>=7?'var(--green)':sc>=5?'var(--amber)':'var(--red)';
+      return `<div class="call-card" onclick="toggleDetail(${calls.length-1-i})">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <div style="width:36px;height:36px;border-radius:50%;background:${sc?scColor+'22':'var(--s2)'};color:${sc?scColor:'var(--text3)'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${sc?sc+'/10':'?'}</div>
+          <div><div style="font-size:12px;font-weight:600">${c.nom}</div><div style="font-size:9px;color:var(--text3)">${c.date} · ${c.duree||'?'} min</div></div>
+          <div style="margin-left:auto;display:flex;gap:5px;align-items:center">
+            <span class="tag ${c.result==='Signé'?'t-gr':c.result==='Perdu'?'t-rd':'t-am'}">${c.result}</span>
+            ${c.montant?'<span style="font-family:var(--font-m);font-size:11px;color:var(--amber)">' +fE(c.montant)+'</span>':''}
+          </div>
+        </div>
+        ${c.obj?'<div style="font-size:10px;color:var(--text3)">Objection : '+c.obj+'</div>':''}
+        <div id="cd-${calls.length-1-i}" style="display:none;margin-top:10px">
+          ${c.analysis?renderAnalysis(c.analysis):'<div style="font-size:10px;color:var(--text3)">Pas d\'analyse disponible</div>'}
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function toggleDetail(i){const e=document.getElementById('cd-'+i);if(e)e.style.display=e.style.display==='none'?'block':'none';}
+
+function renderAnalysis(a){
+  if(!a)return'';
+  let html='';
+  // Total score with level badge
+  if(a.score){
+    const sc=FRAMEWORK.scoring.find(s=>a.score>=s.min&&a.score<=s.max)||FRAMEWORK.scoring[0];
+    html+=`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:${sc.color}22;border:1px solid ${sc.color}44;border-radius:8px;margin-bottom:12px">
+      <div style="font-family:var(--font-d);font-size:28px;color:${sc.color}">${a.score}<span style="font-size:14px;color:var(--text3)">/${a.totalPts||200}</span></div>
+      <div><div style="font-size:11px;font-weight:700;color:${sc.color}">${a.niveau||sc.label.split('—')[0].trim()}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">${sc.label}</div></div>
+    </div>`;
+  }
+  // Category scores grid
+  if(a.categoryScores){
+    html+=`<div class="score-grid">`;
+    FRAMEWORK.categories.forEach((cat,i)=>{
+      const score=a.categoryScores[i]||0;
+      const pctScore=Math.round(score/cat.pts*100);
+      const color=pctScore>=70?'var(--green)':pctScore>=40?'var(--amber)':'var(--red)';
+      html+=`<div class="score-item">
+        <div class="score-cat">${cat.name}</div>
+        <div class="score-bar-bg"><div class="score-bar-fill" style="width:${pctScore}%;background:${color}"></div></div>
+        <div class="score-val" style="color:${color}">${score}/${cat.pts}</div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+  html+=`<div class="two-col" style="margin-bottom:0">
+    <div class="asec">
+      <div class="asec-t" style="color:var(--green)">✓ Points forts</div>
+      ${(a.positifs||[]).map(p=>'<div class="aitem"><div class="adot" style="background:var(--green);margin-top:4px"></div>'+p+'</div>').join('')}
+    </div>
+    <div class="asec">
+      <div class="asec-t" style="color:var(--red)">✗ Axes d\'amélioration</div>
+      ${(a.ameliorations||[]).map(p=>'<div class="aitem"><div class="adot" style="background:var(--red);margin-top:4px"></div>'+p+'</div>').join('')}
+    </div>
+  </div>
+  <div class="asec" style="margin-bottom:0">
+    <div class="asec-t" style="color:var(--blue)">→ Recommandations prioritaires</div>
+    ${(a.recommandations||[]).map(p=>'<div class="aitem"><div class="adot" style="background:var(--blue);margin-top:4px"></div>'+p+'</div>').join('')}
+  </div>`;
+  return html;
+}
+
+async function addCall(){
+  const rid=document.getElementById('call-prospect').value;
+  const nomField=document.getElementById('call-nom').value.trim();
+  const nom=rid?leads.find(l=>l.id===rid)?.nom||nomField:nomField;
+  if(!nom){toast('Nom requis',true);return;}
+  const transcript=document.getElementById('call-transcript').value.trim();
+  const call={nom,date:document.getElementById('call-date').value||today,
+    duree:gv('call-duree'),result:document.getElementById('call-result').value,
+    montant:gv('call-montant'),obj:document.getElementById('call-obj').value,
+    transcript,analysis:null,score:null};
+
+  if(transcript){
+    const btn=document.getElementById('call-btn');btn.disabled=true;btn.textContent='Analyse IA en cours...';
+    const fw=FRAMEWORK.categories.map((c,i)=>{
+      const criteriaStr=c.criteria.map(cr=>`   - ${cr.label} (max ${cr.pts}pts) — niveaux: ${FRAMEWORK.levels.map((l,li)=>l+':'+cr.levels[li]+'pts').join(', ')}`).join('\n');
+      return `${i+1}. ${c.name} — TOTAL ${c.pts}pts\n${criteriaStr}`;
+    }).join('\n\n');
+    const scoringStr=FRAMEWORK.scoring.map(s=>`${s.min}-${s.max}pts: ${s.label}`).join('\n');
+    try{
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,
+          messages:[{role:'user',content:`Tu es un expert en vente high-ticket coaching/business. Analyse ce transcript selon le TABLEAU D'ÉVALUATION CLOSING BOOSMENTOR officiel (200 points) et retourne UNIQUEMENT un JSON valide sans markdown.
+
+FRAMEWORK OFFICIEL BOOSMENTOR (200pts total):
+${fw}
+
+GRILLE DE NIVEAU (Closeur):
+${scoringStr}
+
+Retourne ce JSON exact — categoryScores = score pour chaque catégorie dans l'ordre (9 catégories):
+{"score":130,"totalPts":200,"niveau":"Closeur intéressant","categoryScores":[5,7,22,8,25,15,24,38,16],"positifs":["point précis 1","point précis 2","point précis 3"],"ameliorations":["point précis 1","point précis 2","point précis 3"],"recommandations":["conseil actionnable 1","conseil actionnable 2","conseil actionnable 3"],"appreciationGlobale":"Texte d'appréciation globale coloré en fonction du niveau"}
+
+Sois précis, basé sur ce qui est dit EXACTEMENT dans le transcript. Chaque score doit être justifiable.
+
+TRANSCRIPT:
+${transcript.slice(0,4000)}`}]})});
+      const data=await res.json();
+      const text=data.content[0].text.replace(/```json|```/g,'').trim();
+      call.analysis=JSON.parse(text);
+      call.score=call.analysis.score;
+      toast('Analyse IA terminée !');
+    }catch(e){toast('Analyse IA échouée — call sauvegardé',true);}
+    finally{btn.disabled=false;btn.textContent='Analyser par IA → Framework Boosmentor';}
+  }
+
+  calls.push(call);saveL();renderCalls();
+  // Update lead in Airtable if linked
+  if(rid&&call.result){
+    const newStatut=call.result==='Signé'?'Signé':call.result==='Perdu'?'Perdu':'À relancer';
+    await aF(TL+'/'+rid,{method:'PATCH',body:JSON.stringify({fields:{[FL.statut]:newStatut}})}).catch(()=>{});
+    await loadLeads();
+  }
+  ['call-nom','call-duree','call-montant','call-transcript'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('call-date').value='';
+  document.getElementById('call-prospect').value='';
+  toast('Call enregistré');
+}
+
+// ═══ DOCS ═════════════════════════════════════════════════════
+const DOCS=[
+  {id:'sop',icon:'📋',title:'SOP Setter',cat:'Opérations',desc:'Journée type, scripts, règles',
+    content:'<h2 style="font-family:var(--font-d);font-size:22px;margin-bottom:12px">SOP Setter — Boosmentor</h2><h3 style="color:var(--blue);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin:10px 0 6px">Objectifs quotidiens</h3><ul style="padding-left:16px;line-height:1.8"><li>80–120 messages envoyés par jour</li><li>Taux de réponse cible : 15–20%</li><li>1–2 appels réservés par jour minimum</li><li>EOD rempli avant 20h sans exception</li></ul><h3 style="color:var(--blue);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin:10px 0 6px">Règles absolues</h3><ul style="padding-left:16px;line-height:1.8"><li>Jamais de pitch en premier message</li><li>Toujours demander la source au prospect</li><li>Logger chaque prospect le jour même dans le CRM</li><li>Notifier Clément si un contenu génère 2x plus de réponses</li></ul>'},
+  {id:'offre',icon:'💎',title:'Structure offre',cat:'Vente',desc:'Standard 5K, Premium 10K',
+    content:'<h2 style="font-family:var(--font-d);font-size:22px;margin-bottom:12px">Structure de l\'offre</h2><h3 style="color:var(--blue);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin:10px 0 6px">Standard — 5 000€</h3><ul style="padding-left:16px;line-height:1.8"><li>Paiement : 2 500€ upfront + 2 500€ au résultat</li><li>Durée : 3 mois</li><li>Système présuasion email/SMS + setter A-player + 6 lives hebdo + plan d\'action + communauté elite</li></ul><h3 style="color:var(--blue);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin:10px 0 6px">Premium — 10 000€</h3><ul style="padding-left:16px;line-height:1.8"><li>Limité 3 places/mois</li><li>Tout le Standard + 2 jours présentiel + 24/7 pass assistance</li></ul>'},
+  {id:'qualif',icon:'🎯',title:'Qualification prospect',cat:'Acquisition',desc:'Critères ICP, qui cibler',
+    content:'<h2 style="font-family:var(--font-d);font-size:22px;margin-bottom:12px">Qualification</h2><h3 style="color:var(--green);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin:10px 0 6px">Profil idéal</h3><ul style="padding-left:16px;line-height:1.8"><li>Coach / prestataire make money online</li><li>CA mensuel 3K–8K€ (sweet spot 4K–7K)</li><li>Audience 2K–10K abonnés qualifiés</li><li>Offre confirmée 2 500€+ upfront</li><li>Francophone</li></ul><h3 style="color:var(--red);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin:10px 0 6px">À ne pas cibler</h3><ul style="padding-left:16px;line-height:1.8"><li>Débutants sous 3K/mois sans offre validée</li><li>Niches hors MMO/business en ligne</li><li>Non francophones</li><li>Audience sous 2K abonnés</li><li>Solopreneurs qui veulent rester seuls</li></ul>'},
+  {id:'objections',icon:'💬',title:'Gestion objections',cat:'Vente',desc:'Scripts pour chaque objection',
+    content:'<h2 style="font-family:var(--font-d);font-size:22px;margin-bottom:12px">Gestion des objections</h2><h3 style="color:var(--blue);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin:10px 0 6px">Prix</h3><p>"La vraie question c\'est pas le prix — c\'est combien ça te coûte chaque mois que tu restes bloqué à 4K ? Tu veux qu\'on calcule ensemble ?"</p><h3 style="color:var(--blue);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin:10px 0 6px">Besoin de réfléchir</h3><p>"Qu\'est-ce qui te fait hésiter exactement ? C\'est le timing, le budget, ou tu n\'es pas convaincu du résultat ?" — Identifier l\'objection réelle.</p><h3 style="color:var(--blue);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin:10px 0 6px">Conjoint</h3><p>Traiter en amont : "Si je peux te montrer que ça peut générer X en Y mois, ta femme/ton mari sera d\'accord ?"</p>'},
+];
+
+let userDocs=JSON.parse(localStorage.getItem('bm_docs')||'[]');
+
+function renderDocs(){
+  const allDocs=[...DOCS,...userDocs];
+  const grid=document.getElementById('docs-grid');
+  document.getElementById('doc-viewer').style.display='none';
+  grid.style.display='grid';
+  const cats=[...new Set(allDocs.map(d=>d.cat))];
+  grid.innerHTML=cats.map(cat=>`
+    <div style="grid-column:1/-1;margin:8px 0 4px"><span style="font-size:8px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase">${cat}</span></div>
+    ${allDocs.filter(d=>d.cat===cat).map(d=>`
+      <div onclick="openDoc('${d.id}')" style="background:var(--s1);border:1px solid var(--brd);border-radius:8px;padding:12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='rgba(65,105,225,.3)'" onmouseout="this.style.borderColor='rgba(65,105,225,0.12)'">
+        <div style="font-size:18px;margin-bottom:7px">${d.icon}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:3px">${d.title}</div>
+        <div style="font-size:10px;color:var(--text3);line-height:1.4">${d.desc}</div>
+        <div style="margin-top:7px"><span class="tag t-bl">${d.cat}</span></div>
+      </div>`).join('')}
+  `).join('')
+  +`<div style="background:var(--s1);border:1px dashed rgba(65,105,225,.3);border-radius:8px;padding:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;min-height:100px" onclick="addDoc()">
+    <div style="font-size:24px;margin-bottom:5px;color:var(--text3)">+</div>
+    <div style="font-size:11px;color:var(--text3)">Ajouter un doc</div>
+  </div>`;
+}
+
+function openDoc(id){
+  const allDocs=[...DOCS,...userDocs];
+  const d=allDocs.find(x=>x.id===id);if(!d)return;
+  document.getElementById('docs-grid').style.display='none';
+  document.getElementById('doc-viewer').style.display='block';
+  document.getElementById('doc-content').innerHTML=d.content;
+}
+function closeDoc(){renderDocs();}
+function addDoc(){
+  const title=prompt('Titre :');if(!title)return;
+  const cat=prompt('Catégorie :')||'Autre';
+  const content=prompt('Contenu (texte ou HTML) :')||'';
+  userDocs.push({id:'ud-'+Date.now(),icon:'📄',title,cat,desc:title,content});
+  localStorage.setItem('bm_docs',JSON.stringify(userDocs));
+  renderDocs();toast('Document ajouté');
+}
+
+// ═══ INIT ═════════════════════════════════════════════════════
+document.getElementById('eod-date').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+document.getElementById('time-date').value=today;
+document.getElementById('call-date').value=today;
+refreshAds();refreshConfs();
+(async()=>{
+  try{await syncAll();}catch(e){}
+  renderDocs();refreshCEO();
+})();
+</script>
+</body>
+</html>
