@@ -914,11 +914,27 @@ async function syncAll(){
 
 async function loadLeads(){
   const recs=await aAll(TL);
-  leads=recs.map(r=>({id:r.id,nom:r.fields[FL.nom]||'',tel:r.fields[FL.tel]||'',email:r.fields[FL.email]||'',
-    statut:(r.fields[FL.statut]?.name||r.fields[FL.statut]||''),
-    canal:(r.fields[FL.canal]?.name||r.fields[FL.canal]||''),
-    src:r.fields[FL.src]||'',
-    relance:r.fields[FL.relance]||'',notes:r.fields[FL.notes]||'',dateEntree:r.fields[FL.dateEntree]||''}));
+  leads=recs.map(r=>{
+    const f=r.fields;
+    // Airtable returns field names as keys (not IDs) — support both
+    const g=(id,name)=>{
+      const v=f[id]!==undefined?f[id]:f[name];
+      if(v&&typeof v==='object'&&v.name)return v.name;
+      return v||'';
+    };
+    return {
+      id:r.id,
+      nom:g(FL.nom,'Nom'),
+      tel:g(FL.tel,'Téléphone'),
+      email:g(FL.email,'Email'),
+      statut:g(FL.statut,'Statut'),
+      canal:g(FL.canal,'Source canal'),
+      src:g(FL.src,'Source contenu'),
+      relance:g(FL.relance,'Date prochaine relance'),
+      notes:g(FL.notes,'Notes'),
+      dateEntree:g(FL.dateEntree,'Date entrée')
+    };
+  });
   renderCRM(); renderCal(); populateProspectSelect(); return leads;
 }
 
