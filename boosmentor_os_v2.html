@@ -250,6 +250,7 @@ tbody td:first-child{color:var(--text);font-weight:500}
       <span style="font-size:10px;color:var(--text3)">→</span>
       <input type="date" id="date-to" style="background:var(--s2);border:1px solid var(--brd2);border-radius:5px;padding:5px 8px;font-size:10px;color:var(--text);font-family:var(--font);outline:none">
     </div>
+    <button class="btn-out" onclick="setApiKey()" style="font-size:10px;padding:5px 10px" title="Configurer clé IA">🔑 Clé IA</button>
     <button class="btn" onclick="syncAll()" style="font-size:10px;padding:5px 12px">↻ Sync Airtable</button>
   </div>
 </div>
@@ -534,6 +535,11 @@ tbody td:first-child{color:var(--text);font-weight:500}
         <option>Appel réservé</option><option>À relancer</option><option>Signé</option><option>Perdu</option>
       </select>
       <span style="font-size:10px;color:var(--text3)" id="crm-cnt">0 prospects</span>
+      <select id="crm-sort" onchange="renderCRM()" style="background:var(--s1);border:1px solid var(--brd);border-radius:5px;padding:5px 8px;font-size:10px;color:var(--text2);font-family:var(--font);outline:none">
+        <option value="recent">Plus récent d'abord</option>
+        <option value="oldest">Plus ancien d'abord</option>
+        <option value="nom">Nom A→Z</option>
+      </select>
       <button class="btn btn-sm" onclick="openAddProspect()" style="margin-left:auto">+ Ajouter</button>
       <span class="card-a" onclick="loadLeads()">↻ Sync</span>
     </div>
@@ -541,8 +547,17 @@ tbody td:first-child{color:var(--text);font-weight:500}
       ⚠ <span id="crm-alert-t"></span>
     </div>
     <div class="card">
-      <table><thead><tr><th>Nom</th><th>Canal</th><th>Statut</th><th>Tél.</th><th>Relance</th><th>Source contenu</th><th>Notes</th><th></th></tr></thead>
-      <tbody id="crm-table"><tr><td colspan="8" class="empty">Chargement Airtable...</td></tr></tbody></table>
+      <table><thead><tr>
+        <th style="cursor:pointer;user-select:none" onclick="sortCRM('nom')">Nom <span id="sort-nom">↕</span></th>
+        <th style="cursor:pointer;user-select:none" onclick="sortCRM('canal')">Canal <span id="sort-canal">↕</span></th>
+        <th style="cursor:pointer;user-select:none" onclick="sortCRM('statut')">Statut <span id="sort-statut">↕</span></th>
+        <th>Tél.</th>
+        <th style="cursor:pointer;user-select:none" onclick="sortCRM('relance')">Relance <span id="sort-relance">↕</span></th>
+        <th>Source contenu</th>
+        <th>Notes</th>
+        <th></th>
+      </tr></thead>
+      <tbody id="crm-table"><tr><td colspan="9" class="empty">Chargement Airtable...</td></tr></tbody></table>
     </div>
   </div>
 
@@ -908,6 +923,8 @@ tbody td:first-child{color:var(--text);font-weight:500}
 
 <script>
 // ═══ CONFIG ═══════════════════════════════════════════════════
+// ⚠️ REMPLACE PAR TA CLÉ API ANTHROPIC → console.anthropic.com
+const ANTHROPIC_KEY = localStorage.getItem('bm_anthropic_key') || '';
 const AT='pat2HBwxBq9Yui3YK.60413e681b9aa13f425d23dfb861b4ddfc8bd13d62dceaf5a927f73f510be6ed';
 const BID='appcoXmZ3k9S1pcso';
 const TL='tbl3yRvWU0WKQ93bF', TV='tbl0HBKnvQ7saJgaO', TE='tblshJoq1gJfC8JPf';
@@ -953,6 +970,14 @@ function saveL(){
   localStorage.setItem('bm_confs',JSON.stringify(confs));
 }
 
+function setApiKey(){
+  const k=prompt("Clé API Anthropic (console.anthropic.com)");
+  if(k===null)return;
+  if(k&&k.startsWith('sk-ant')){localStorage.setItem('bm_anthropic_key',k);toast('Clé IA enregistrée ✓');location.reload();}
+  else if(k===''){localStorage.removeItem('bm_anthropic_key');toast('Clé supprimée');}
+  else toast('Format invalide — doit commencer par sk-ant',true);
+}
+
 // ═══ AIRTABLE ═════════════════════════════════════════════════
 async function aF(path,opts={}){
   try{
@@ -964,6 +989,8 @@ async function aF(path,opts={}){
 async function aAll(tid,qs=''){
   let recs=[],off=null;
   do{const d=await aF(tid+'?pageSize=100'+qs+(off?'&offset='+off:''));recs=recs.concat(d.records||[]);off=d.offset;}while(off);
+  // Sort by createdTime descending (most recent first) as default
+  recs.sort((a,b)=>new Date(b.createdTime)-new Date(a.createdTime));
   return recs;
 }
 
@@ -981,23 +1008,27 @@ async function loadLeads(){
   const recs=await aAll(TL);
   leads=recs.map(r=>{
     const f=r.fields;
-    // Airtable returns field names as keys (not IDs) — support both
     const g=(id,name)=>{
       const v=f[id]!==undefined?f[id]:f[name];
-      if(v&&typeof v==='object'&&v.name)return v.name;
-      return v||'';
+      if(v===null||v===undefined)return'';
+      if(typeof v==='object'&&v.name)return v.name;
+      return String(v);
     };
+    const nom=g(FL.nom,'Nom')||g('','Name')||'';
+    // Use createdTime as fallback for date
+    const dateEntree=g(FL.dateEntree,'Date entrée')||r.createdTime?.split('T')[0]||'';
     return {
       id:r.id,
-      nom:g(FL.nom,'Nom'),
+      nom:nom,
       tel:g(FL.tel,'Téléphone'),
       email:g(FL.email,'Email'),
-      statut:g(FL.statut,'Statut'),
+      statut:g(FL.statut,'Statut')||'Potentiel',
       canal:g(FL.canal,'Source canal'),
       src:g(FL.src,'Source contenu'),
       relance:g(FL.relance,'Date prochaine relance'),
       notes:g(FL.notes,'Notes'),
-      dateEntree:g(FL.dateEntree,'Date entrée')
+      dateEntree:dateEntree,
+      createdTime:r.createdTime||''
     };
   });
   renderCRM(); renderCal(); populateProspectSelect(); return leads;
@@ -1557,6 +1588,21 @@ function switchProspect(tab,el){
   if(tab==='cal')renderCal();
 }
 
+
+// ═══ CRM SORT ═════════════════════════════════════════════════
+let crmSortField = '';
+let crmSortDir = 'asc';
+
+function sortCRM(field){
+  if(crmSortField===field){crmSortDir=crmSortDir==='asc'?'desc':'asc';}
+  else{crmSortField=field;crmSortDir='asc';}
+  ['nom','canal','statut','relance'].forEach(f=>{
+    const el=document.getElementById('sort-'+f);
+    if(el)el.textContent=f===crmSortField?(crmSortDir==='asc'?'↑':'↓'):'↕';
+  });
+  renderCRM();
+}
+
 // ═══ CRM ══════════════════════════════════════════════════════
 const sCls={Potentiel:'t-bl',Contacté:'t-am',Qualifié:'t-pu','Appel réservé':'t-gr','À relancer':'t-am',Signé:'t-gr',Perdu:'t-rd'};
 const cTag={Instagram:'<span class="tag t-ig">IG</span>',LinkedIn:'<span class="tag t-li">LI</span>',Publicité:'<span class="tag t-am">Pub</span>',Skool:'<span class="tag t-pu">Skool</span>',TikTok:'<span class="tag" style="background:rgba(0,0,0,.4);color:#69C9D0;border:1px solid rgba(105,201,208,.25)">TikTok</span>',iClosed:'<span class="tag t-bl">iClosed</span>',Organique:'<span class="tag t-gr">Org.</span>'};
@@ -1564,19 +1610,29 @@ const cTag={Instagram:'<span class="tag t-ig">IG</span>',LinkedIn:'<span class="
 function renderCRM(){
   const sr=document.getElementById('crm-s')?.value.toLowerCase()||'';
   const sf=document.getElementById('crm-sf')?.value||'';
-  const f=leads.filter(p=>(!sr||p.nom.toLowerCase().includes(sr)||p.tel.includes(sr))&&(!sf||p.statut===sf));
+  let f=leads.filter(p=>(!sr||p.nom.toLowerCase().includes(sr)||p.tel.includes(sr))&&(!sf||p.statut===sf));
+  if(crmSortField){
+    const statOrder={Potentiel:1,Contacté:2,Qualifié:3,'Appel réservé':4,'À relancer':5,Signé:6,Perdu:7};
+    f=[...f].sort((a,b)=>{
+      let va=a[crmSortField]||'',vb=b[crmSortField]||'';
+      if(crmSortField==='statut'){va=statOrder[va]||99;vb=statOrder[vb]||99;return crmSortDir==='asc'?va-vb:vb-va;}
+      if(crmSortField==='relance'){va=va||'9999';vb=vb||'9999';}
+      return crmSortDir==='asc'?va.localeCompare(vb):vb.localeCompare(va);
+    });
+  }
   const due=leads.filter(p=>p.relance&&p.relance<=today&&p.statut!=='Signé'&&p.statut!=='Perdu');
   s('crm-cnt',f.length+' prospect'+(f.length>1?'s':''));
   const al=document.getElementById('crm-alert');
   if(due.length>0){al.style.display='flex';s('crm-alert-t',due.length+' prospect'+(due.length>1?'s':'')+' à relancer aujourd\'hui');}
   else al.style.display='none';
   const tbl=document.getElementById('crm-table');
-  tbl.innerHTML=f.length===0?'<tr><td colspan="8" class="empty">Aucun prospect — Sync ou + Ajouter</td></tr>'
+  tbl.innerHTML=f.length===0?'<tr><td colspan="9" class="empty">Aucun prospect — Sync ou + Ajouter</td></tr>'
     :f.map(p=>{const isDue=p.relance&&p.relance<=today&&p.statut!=='Signé'&&p.statut!=='Perdu';
       return `<tr style="${isDue?'background:rgba(245,158,11,.04)':''}">
-        <td>${p.nom}</td><td>${cTag[p.canal]||p.canal||'—'}</td>
+        <td>${p.nom||'<span style="color:var(--text3);font-style:italic">Sans nom</span>'}</td><td>${cTag[p.canal]||p.canal||'—'}</td>
         <td><span class="tag ${sCls[p.statut]||''}">${p.statut||'—'}</span></td>
         <td style="font-family:var(--font-m);font-size:10px">${p.tel||'—'}</td>
+        <td style="font-size:10px;color:var(--text3)">${p.dateEntree||p.createdTime?.slice(0,10)||'—'}</td>
         <td style="${isDue?'color:var(--amber);font-weight:600':''}">${p.relance||'—'}</td>
         <td style="font-size:10px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.src||'—'}</td>
         <td style="font-size:10px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text3)">${p.notes||'—'}</td>
@@ -1954,6 +2010,11 @@ async function addCall(){
     transcript,analysis:null,score:null};
 
   if(transcript){
+    if(!ANTHROPIC_KEY){
+      const k=prompt("Clé API Anthropic (console.anthropic.com)");
+      if(k&&k.startsWith('sk-ant')){localStorage.setItem('bm_anthropic_key',k);location.reload();}
+      else{toast('Clé API invalide',true);return;}
+    }
     const btn=document.getElementById('call-btn');btn.disabled=true;btn.textContent='Analyse IA en cours...';
     const fw=FRAMEWORK.categories.map((c,i)=>{
       const criteriaStr=c.criteria.map(cr=>`   - ${cr.label} (max ${cr.pts}pts) — niveaux: ${FRAMEWORK.levels.map((l,li)=>l+':'+cr.levels[li]+'pts').join(', ')}`).join('\n');
@@ -1962,7 +2023,13 @@ async function addCall(){
     const scoringStr=FRAMEWORK.scoring.map(s=>`${s.min}-${s.max}pts: ${s.label}`).join('\n');
     try{
       const res=await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':''},
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'anthropic-version':'2023-06-01',
+          'anthropic-dangerous-direct-browser-access':'true',
+          'x-api-key':ANTHROPIC_KEY
+        },
         body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,
           messages:[{role:'user',content:`Tu es un expert en vente high-ticket coaching/business. Analyse ce transcript selon le TABLEAU D'ÉVALUATION CLOSING BOOSMENTOR officiel (200 points) et retourne UNIQUEMENT un JSON valide sans markdown.
 
@@ -1980,11 +2047,19 @@ Sois précis, basé sur ce qui est dit EXACTEMENT dans le transcript. Chaque sco
 TRANSCRIPT:
 ${transcript.slice(0,4000)}`}]})});
       const data=await res.json();
+      if(data.error){throw new Error(data.error.message||'API error');}
+      if(!data.content||!data.content[0]){throw new Error('Réponse vide de l\'IA');}
       const text=data.content[0].text.replace(/```json|```/g,'').trim();
-      call.analysis=JSON.parse(text);
+      const jsonStart=text.indexOf('{');
+      const jsonEnd=text.lastIndexOf('}')+1;
+      const jsonStr=jsonStart>=0?text.slice(jsonStart,jsonEnd):text;
+      call.analysis=JSON.parse(jsonStr);
       call.score=call.analysis.score;
       toast('Analyse IA terminée !');
-    }catch(e){toast('Analyse IA échouée — call sauvegardé',true);}
+    }catch(e){
+      console.error('IA error:',e);
+      toast('Erreur IA : '+e.message.slice(0,60),true);
+    }
     finally{btn.disabled=false;btn.textContent='Analyser par IA → Framework Boosmentor';}
   }
 
