@@ -216,6 +216,10 @@ tbody td:first-child{color:var(--text);font-weight:500}
     <div class="sb-item" onclick="nav('ads',this)"><span class="sb-icon">◆</span>Publicités & Events</div>
   </div>
   <div class="sb-sec">
+    <div class="sb-lbl">Clients</div>
+    <div class="sb-item" onclick="nav('clients',this)"><span class="sb-icon">★</span>Suivi Clients</div>
+  </div>
+  <div class="sb-sec">
     <div class="sb-lbl">Vente</div>
     <div class="sb-item" onclick="nav('vente',this)"><span class="sb-icon">◐</span>Appels & Closing</div>
   </div>
@@ -252,12 +256,14 @@ tbody td:first-child{color:var(--text);font-weight:500}
 
 <!-- ═══ CEO ═══ -->
 <div class="page active" id="page-ceo">
-  <div class="kpi-g" style="grid-template-columns:repeat(5,1fr)">
+  <div class="kpi-g" style="grid-template-columns:repeat(7,1fr)">
     <div class="kpi"><div class="kpi-l">CA Contracté</div><div class="kpi-v am" id="ceo-c">0€</div><div class="kpi-d">ce mois</div></div>
     <div class="kpi"><div class="kpi-l">CA Collecté</div><div class="kpi-v gr" id="ceo-col">0€</div><div class="kpi-d">encaissé</div></div>
     <div class="kpi"><div class="kpi-l">Coûts fixes</div><div class="kpi-v rd" id="ceo-cost">0€</div><div class="kpi-d">mensuel</div></div>
     <div class="kpi"><div class="kpi-l">Marge nette</div><div class="kpi-v gr" id="ceo-marge">0€</div><div class="kpi-d">collecté - coûts</div></div>
     <div class="kpi"><div class="kpi-l">Taux closing</div><div class="kpi-v bl" id="ceo-taux">0%</div><div class="kpi-d">appels → signés</div></div>
+    <div class="kpi" style="border-color:rgba(34,197,94,.2)"><div class="kpi-l">Cash / Appel</div><div class="kpi-v gr" id="ceo-cash-call">0€</div><div class="kpi-d">cash collecté ÷ appels</div></div>
+    <div class="kpi" style="border-color:rgba(34,197,94,.2)"><div class="kpi-l">Cash / Vente</div><div class="kpi-v gr" id="ceo-cash-vente">0€</div><div class="kpi-d">cash collecté ÷ signés</div></div>
   </div>
 
   <div class="two-col">
@@ -753,6 +759,27 @@ tbody td:first-child{color:var(--text);font-weight:500}
   <div id="calls-list"></div>
 </div>
 
+
+<!-- ═══ CLIENTS ═══ -->
+<div class="page" id="page-clients">
+  <div class="sec-hd"><div class="sec-t">SUIVI CLIENTS</div><div class="sec-s">CA · Satisfaction · Appels qualifiés ajoutés</div></div>
+
+  <div class="kpi-g" style="grid-template-columns:repeat(5,1fr)">
+    <div class="kpi"><div class="kpi-l">Clients actifs</div><div class="kpi-v bl" id="cl-count">0</div></div>
+    <div class="kpi"><div class="kpi-l">CA total collecté</div><div class="kpi-v gr" id="cl-ca">0€</div></div>
+    <div class="kpi"><div class="kpi-l">CA moy. / client</div><div class="kpi-v am" id="cl-ca-avg">0€</div></div>
+    <div class="kpi"><div class="kpi-l">Satisfaction moy.</div><div class="kpi-v gr" id="cl-sat">—/10</div></div>
+    <div class="kpi"><div class="kpi-l">Appels ajoutés moy.</div><div class="kpi-v bl" id="cl-appels-avg">0</div><div class="kpi-d">J+30 moyenne</div></div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+    <button class="btn btn-sm" onclick="openAddClient()">+ Ajouter un client</button>
+  </div>
+
+  <!-- Client cards -->
+  <div id="clients-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:14px"></div>
+</div>
+
 <!-- ═══ DOCS ═══ -->
 <div class="page" id="page-docs">
   <div class="sec-hd"><div class="sec-t">DOCUMENTATION</div><div class="sec-s">Base de connaissance Boosmentor</div></div>
@@ -767,6 +794,44 @@ tbody td:first-child{color:var(--text);font-weight:500}
 </div><!-- /app -->
 
 <!-- MODALS -->
+
+<div class="moverlay" id="m-client">
+  <div class="modal" style="width:640px">
+    <div class="modal-hd"><div class="modal-t" id="cl-modal-t">Nouveau client</div><button class="modal-x" onclick="closeM('m-client')">×</button></div>
+    <input type="hidden" id="cl-idx">
+    <div class="fr">
+      <div class="fi"><div class="fl">Nom du client</div><input id="cl-nom" placeholder="Prénom Nom"></div>
+      <div class="fi"><div class="fl">Date de démarrage</div><input type="date" id="cl-start"></div>
+      <div class="fi"><div class="fl">Offre</div>
+        <select id="cl-offre"><option>Standard 5K</option><option>Premium 10K</option></select>
+      </div>
+      <div class="fi"><div class="fl">CA avant (€/mois)</div><input type="number" id="cl-ca-avant" placeholder="0"></div>
+      <div class="fi"><div class="fl">CA actuel (€/mois)</div><input type="number" id="cl-ca-actuel" placeholder="0"></div>
+      <div class="fi"><div class="fl">Cash collecté (€)</div><input type="number" id="cl-cash" placeholder="0"></div>
+      <div class="fi"><div class="fl">Satisfaction (1-10)</div><input type="number" id="cl-sat-score" min="1" max="10" placeholder="8"></div>
+      <div class="fi"><div class="fl">Statut</div>
+        <select id="cl-statut"><option>En cours</option><option>Résultats obtenus</option><option>Terminé</option><option>Pause</option></select>
+      </div>
+    </div>
+    <div style="background:var(--s2);border-radius:6px;padding:12px;margin-bottom:12px">
+      <div style="font-size:9px;font-weight:700;color:var(--blue);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Appels qualifiés ajoutés</div>
+      <div class="fr" style="grid-template-columns:repeat(5,1fr)">
+        <div class="fi"><div class="fl">J+7</div><input type="number" id="cl-j7" placeholder="0"></div>
+        <div class="fi"><div class="fl">J+15</div><input type="number" id="cl-j15" placeholder="0"></div>
+        <div class="fi"><div class="fl">J+30</div><input type="number" id="cl-j30" placeholder="0"></div>
+        <div class="fi"><div class="fl">J+60</div><input type="number" id="cl-j60" placeholder="0"></div>
+        <div class="fi"><div class="fl">J+90</div><input type="number" id="cl-j90" placeholder="0"></div>
+      </div>
+    </div>
+    <div class="fi" style="margin-bottom:10px"><div class="fl">Notes / Témoignage</div><textarea id="cl-notes" style="min-height:60px" placeholder="Résultats, feedback, témoignage..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="cl-del" onclick="deleteClient()" style="display:none;color:var(--red)">Supprimer</button>
+      <button class="btn-cancel" onclick="closeM('m-client')">Annuler</button>
+      <button class="btn" onclick="saveClient()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
 <div class="moverlay" id="m-cost">
   <div class="modal">
     <div class="modal-hd"><div class="modal-t">Coût fixe mensuel</div><button class="modal-x" onclick="closeM('m-cost')">×</button></div>
@@ -958,7 +1023,7 @@ function openM(id){document.getElementById(id).classList.add('open');}
 function closeM(id){document.getElementById(id).classList.remove('open');}
 
 // ═══ NAV ══════════════════════════════════════════════════════
-const PTitles={ceo:'DASHBOARD CEO',orga:'ACQUISITION · ORGANIQUE',prospect:'ACQUISITION · PROSPECTION',
+const PTitles={ceo:'DASHBOARD CEO',clients:'SUIVI CLIENTS',orga:'ACQUISITION · ORGANIQUE',prospect:'ACQUISITION · PROSPECTION',
   ads:'PUBLICITÉS & ÉVÉNEMENTS',vente:'VENTE · APPELS & CLOSING',docs:'DOCUMENTATION'};
 
 function nav(p,el){
@@ -973,12 +1038,152 @@ function nav(p,el){
   if(p==='ads') refreshAds();
   if(p==='vente'){renderCalls();populateProspectSelect();}
   if(p==='docs') renderDocs();
+  if(p==='clients') renderClients();
 }
 
 function onPeriodChange(){
   const v=document.getElementById('period-sel').value;
   const cd=document.getElementById('custom-dates');
   cd.style.display=v==='custom'?'flex':'none';
+}
+
+
+// ═══ CLIENTS ══════════════════════════════════════════════════
+let clients = JSON.parse(localStorage.getItem('bm_clients')||'[]');
+
+function saveClients(){localStorage.setItem('bm_clients',JSON.stringify(clients));}
+
+function openAddClient(){
+  document.getElementById('cl-modal-t').textContent='Nouveau client';
+  document.getElementById('cl-del').style.display='none';
+  document.getElementById('cl-idx').value='';
+  document.getElementById('cl-start').value=today;
+  ['cl-nom','cl-ca-avant','cl-ca-actuel','cl-cash','cl-sat-score','cl-j7','cl-j15','cl-j30','cl-j60','cl-j90','cl-notes'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('cl-offre').value='Standard 5K';
+  document.getElementById('cl-statut').value='En cours';
+  openM('m-client');
+}
+
+function openEditClient(idx){
+  const c=clients[idx];if(!c)return;
+  document.getElementById('cl-modal-t').textContent='Modifier le client';
+  document.getElementById('cl-del').style.display='inline-flex';
+  document.getElementById('cl-idx').value=idx;
+  document.getElementById('cl-nom').value=c.nom;
+  document.getElementById('cl-start').value=c.start||'';
+  document.getElementById('cl-offre').value=c.offre||'Standard 5K';
+  document.getElementById('cl-ca-avant').value=c.caAvant||0;
+  document.getElementById('cl-ca-actuel').value=c.caActuel||0;
+  document.getElementById('cl-cash').value=c.cash||0;
+  document.getElementById('cl-sat-score').value=c.sat||'';
+  document.getElementById('cl-statut').value=c.statut||'En cours';
+  document.getElementById('cl-j7').value=c.j7||0;
+  document.getElementById('cl-j15').value=c.j15||0;
+  document.getElementById('cl-j30').value=c.j30||0;
+  document.getElementById('cl-j60').value=c.j60||0;
+  document.getElementById('cl-j90').value=c.j90||0;
+  document.getElementById('cl-notes').value=c.notes||'';
+  openM('m-client');
+}
+
+function saveClient(){
+  const nom=document.getElementById('cl-nom').value.trim();
+  if(!nom){toast('Nom requis',true);return;}
+  const idx=document.getElementById('cl-idx').value;
+  const c={
+    nom,start:document.getElementById('cl-start').value,
+    offre:document.getElementById('cl-offre').value,
+    caAvant:gv('cl-ca-avant'),caActuel:gv('cl-ca-actuel'),
+    cash:gv('cl-cash'),sat:gv('cl-sat-score'),
+    statut:document.getElementById('cl-statut').value,
+    j7:gv('cl-j7'),j15:gv('cl-j15'),j30:gv('cl-j30'),j60:gv('cl-j60'),j90:gv('cl-j90'),
+    notes:document.getElementById('cl-notes').value
+  };
+  if(idx!=='')clients[parseInt(idx)]=c;else clients.push(c);
+  saveClients();renderClients();closeM('m-client');toast('Client enregistré');
+}
+
+function deleteClient(){
+  const idx=parseInt(document.getElementById('cl-idx').value);
+  if(!confirm('Supprimer ce client ?'))return;
+  clients.splice(idx,1);saveClients();renderClients();closeM('m-client');toast('Supprimé');
+}
+
+function renderClients(){
+  const count=clients.length;
+  const totalCash=clients.reduce((s,c)=>s+(c.cash||0),0);
+  const avgCash=count>0?(totalCash/count).toFixed(0):0;
+  const sats=clients.filter(c=>c.sat>0);
+  const avgSat=sats.length>0?(sats.reduce((s,c)=>s+c.sat,0)/sats.length).toFixed(1):null;
+  const avgAppels=count>0?(clients.reduce((s,c)=>s+(c.j30||0),0)/count).toFixed(0):0;
+  s('cl-count',count);s('cl-ca',fE(totalCash));s('cl-ca-avg',fE(parseInt(avgCash)));
+  s('cl-sat',avgSat?avgSat+'/10':'—');s('cl-appels-avg',avgAppels);
+
+  const stColors={'En cours':'var(--blue)','Résultats obtenus':'var(--green)','Terminé':'var(--text3)','Pause':'var(--amber)'};
+  const grid=document.getElementById('clients-grid');
+  if(!grid)return;
+  grid.innerHTML=clients.length===0
+    ?'<div class="empty" style="grid-column:1/-1">Aucun client — cliquer + Ajouter</div>'
+    :clients.map((c,i)=>{
+      const delta=c.caActuel&&c.caAvant?(c.caActuel-c.caAvant):0;
+      const deltaColor=delta>0?'var(--green)':delta<0?'var(--red)':'var(--text3)';
+      const satColor=c.sat>=8?'var(--green)':c.sat>=6?'var(--amber)':'var(--red)';
+      const jours=c.start?Math.floor((new Date()-new Date(c.start))/86400000):0;
+      return `<div class="card" style="border-color:${stColors[c.statut]||'var(--brd)'}22">
+        <div class="card-h" style="border-color:${stColors[c.statut]||'var(--brd)'}33">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${c.nom}</div>
+            <div style="font-size:9px;color:var(--text3);margin-top:2px">${c.offre} · J+${jours} · ${c.start||'—'}</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span class="tag" style="background:${stColors[c.statut]||'var(--brd)'}22;color:${stColors[c.statut]||'var(--text3)'};border:1px solid ${stColors[c.statut]||'var(--brd)'}44">${c.statut}</span>
+            <button class="btn-out" onclick="openEditClient(${i})" style="padding:3px 8px;font-size:9px">✎</button>
+          </div>
+        </div>
+        <div class="card-b">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+            <div style="background:var(--s2);border-radius:6px;padding:8px;text-align:center">
+              <div style="font-size:8px;color:var(--text3);margin-bottom:3px">CASH COLLECTÉ</div>
+              <div style="font-size:14px;font-family:var(--font-d);color:var(--green)">${fE(c.cash||0)}</div>
+            </div>
+            <div style="background:var(--s2);border-radius:6px;padding:8px;text-align:center">
+              <div style="font-size:8px;color:var(--text3);margin-bottom:3px">CA AVANT</div>
+              <div style="font-size:14px;font-family:var(--font-d);color:var(--text)">${fE(c.caAvant||0)}</div>
+            </div>
+            <div style="background:var(--s2);border-radius:6px;padding:8px;text-align:center">
+              <div style="font-size:8px;color:var(--text3);margin-bottom:3px">CA ACTUEL</div>
+              <div style="font-size:14px;font-family:var(--font-d);color:var(--text)">${fE(c.caActuel||0)}</div>
+            </div>
+            <div style="background:var(--s2);border-radius:6px;padding:8px;text-align:center">
+              <div style="font-size:8px;color:var(--text3);margin-bottom:3px">DELTA</div>
+              <div style="font-size:14px;font-family:var(--font-d);color:${deltaColor}">${delta>0?'+':''}${fE(delta)}</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-size:9px;color:var(--text3)">SATISFACTION</div>
+            <div style="display:flex;gap:3px;align-items:center">
+              ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<div style="width:14px;height:14px;border-radius:3px;background:${n<=(c.sat||0)?satColor:'var(--s3)'};cursor:pointer" onclick="quickSat(${i},${n})"></div>`).join('')}
+              <span style="font-size:11px;font-weight:700;color:${satColor};margin-left:4px">${c.sat||'—'}/10</span>
+            </div>
+          </div>
+          <div style="margin-bottom:8px">
+            <div style="font-size:9px;color:var(--text3);margin-bottom:6px">APPELS QUALIFIÉS AJOUTÉS</div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">
+              ${[{l:'J+7',v:c.j7},{l:'J+15',v:c.j15},{l:'J+30',v:c.j30},{l:'J+60',v:c.j60},{l:'J+90',v:c.j90}].map(x=>`
+                <div style="background:var(--s2);border-radius:5px;padding:6px;text-align:center">
+                  <div style="font-size:8px;color:var(--text3)">${x.l}</div>
+                  <div style="font-size:15px;font-family:var(--font-d);color:${(x.v||0)>=3?'var(--green)':(x.v||0)>=1?'var(--amber)':'var(--text3)'}">${x.v||0}</div>
+                </div>`).join('')}
+            </div>
+          </div>
+          ${c.notes?`<div style="font-size:10px;color:var(--text2);background:var(--s2);border-radius:5px;padding:8px;line-height:1.5;border-left:2px solid var(--blue)">${c.notes}</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function quickSat(idx,score){
+  clients[idx].sat=score;saveClients();renderClients();toast('Satisfaction mise à jour');
 }
 
 // ═══ CEO ══════════════════════════════════════════════════════
@@ -1532,6 +1737,10 @@ function refreshAds(){
         <td style="font-family:var(--font-m)">${fE(a.ca)}</td>
         <td class="${aroas>=3?'t-gr':'t-rd'}" style="font-family:var(--font-m)">${aroas}x</td>
         <td><span class="tag ${a.statut==='Active'?'t-gr':a.statut==='Pausée'?'t-am':'t-rd'}">${a.statut}</span></td>
+        <td style="white-space:nowrap">
+          <button class="btn-out" onclick="editAd(${ads.indexOf(a)})" style="padding:2px 7px;font-size:9px;margin-right:4px">✎</button>
+          <button class="btn-out" onclick="deleteAd(${ads.indexOf(a)})" style="padding:2px 7px;font-size:9px;color:var(--red);border-color:rgba(239,68,68,.3)">✕</button>
+        </td>
       </tr>`;
     }).join('');
 }
@@ -1607,6 +1816,37 @@ function refreshConfs(){
 function togglePubPlan(){
   const p=document.getElementById('pub-plan');
   p.style.display=p.style.display==='none'?'block':'none';
+}
+
+
+function editAd(idx){
+  const a=ads[idx];if(!a)return;
+  document.getElementById('ad-nom').value=a.nom;
+  document.getElementById('ad-type').value=a.type;
+  document.getElementById('ad-budget').value=a.budget;
+  document.getElementById('ad-imp').value=a.impressions||0;
+  document.getElementById('ad-clics').value=a.clics||0;
+  document.getElementById('ad-leads').value=a.leads||0;
+  document.getElementById('ad-ca').value=a.ca||0;
+  document.getElementById('ad-statut').value=a.statut;
+  const btn=document.querySelector('#ads-meta .btn[onclick="addAd()"]');
+  if(btn){btn.textContent='Mettre à jour';btn.onclick=()=>updateAd(idx);}
+  toast('Modifie et clique Mettre à jour');
+}
+function updateAd(idx){
+  ads[idx]={nom:document.getElementById('ad-nom').value.trim(),
+    type:document.getElementById('ad-type').value,
+    budget:gv('ad-budget'),impressions:gv('ad-imp'),clics:gv('ad-clics'),
+    leads:gv('ad-leads'),ca:gv('ad-ca'),statut:document.getElementById('ad-statut').value};
+  saveL();refreshAds();
+  ['ad-nom','ad-budget','ad-imp','ad-clics','ad-leads','ad-ca'].forEach(id=>document.getElementById(id).value='');
+  const btn=document.querySelector('#ads-meta .btn');
+  if(btn){btn.textContent='Ajouter la campagne';btn.onclick=addAd;}
+  toast('Campagne mise à jour');
+}
+function deleteAd(idx){
+  if(!confirm('Supprimer cette campagne ?'))return;
+  ads.splice(idx,1);saveL();refreshAds();toast('Supprimée');
 }
 
 // ═══ VENTE ════════════════════════════════════════════════════
@@ -1722,7 +1962,7 @@ async function addCall(){
     const scoringStr=FRAMEWORK.scoring.map(s=>`${s.min}-${s.max}pts: ${s.label}`).join('\n');
     try{
       const res=await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST',headers:{'Content-Type':'application/json'},
+        method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':''},
         body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,
           messages:[{role:'user',content:`Tu es un expert en vente high-ticket coaching/business. Analyse ce transcript selon le TABLEAU D'ÉVALUATION CLOSING BOOSMENTOR officiel (200 points) et retourne UNIQUEMENT un JSON valide sans markdown.
 
@@ -1821,7 +2061,7 @@ document.getElementById('call-date').value=today;
 refreshAds();refreshConfs();
 (async()=>{
   try{await syncAll();}catch(e){}
-  renderDocs();refreshCEO();
+  renderDocs();refreshCEO();renderClients();
 })();
 </script>
 </body>
