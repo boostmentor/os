@@ -242,6 +242,12 @@ tbody td:first-child{color:var(--text);font-weight:500}
         <div id="api-key-dot" style="width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0;margin-top:4px"></div>
       </div>
     </div>
+    <div style="width:100%">
+      <div style="font-size:8px;color:var(--text3);margin-bottom:3px;letter-spacing:1px;text-transform:uppercase">Base Airtable</div>
+      <input id="base-id-input" type="text" placeholder="appXXXXXXXXXXXXXX" 
+        style="width:100%;background:var(--s2);border:1px solid var(--brd);border-radius:4px;padding:4px 6px;font-size:9px;color:var(--text);font-family:var(--font-m);outline:none"
+        oninput="saveBaseId(this.value)">
+    </div>
   </div>
 </div>
 
@@ -365,7 +371,7 @@ tbody td:first-child{color:var(--text);font-weight:500}
           <button class="btn btn-sm" onclick="openAddContent()">+ Ajouter</button>
         </div>
       </div>
-      <table><thead><tr><th>Titre</th><th>Canal</th><th>Date</th><th>Vues</th><th>CA</th><th>CPV</th><th>J+2</th><th>J+5</th><th>J+7</th><th>Temps</th><th></th></tr></thead>
+      <table><thead><tr><th>Titre</th><th>Canal</th><th>Date</th><th>Vues</th><th>CA</th><th>CPV</th><th>CTR</th><th>J+2</th><th>J+5</th><th>J+7</th><th>Temps</th><th></th></tr></thead>
       <tbody id="ytb-table"><tr><td colspan="11" class="empty">Aucune vidéo</td></tr></tbody></table>
     </div>
   </div>
@@ -924,6 +930,7 @@ tbody td:first-child{color:var(--text);font-weight:500}
       <div class="fi"><div class="fl">Interactions</div><input type="number" id="c-inter" placeholder="0"></div>
       <div class="fi"><div class="fl">Clics VSL</div><input type="number" id="c-clics" placeholder="0"></div>
       <div class="fi"><div class="fl">Temps travaillé (h)</div><input type="number" id="c-temps" placeholder="0" step="0.5"></div>
+      <div class="fi" id="c-ctr-wrap" style="display:none"><div class="fl">CTR (%)</div><input type="number" id="c-ctr" placeholder="0.0" step="0.1" min="0" max="100"></div>
       <div class="fi" id="c-essai-wrap" style="display:none"><div class="fl">Type de réel</div><select id="c-essai"><option value="">Réel normal</option><option value="essai">Réel d'essai</option></select></div>
     </div>
     <div class="modal-actions"><button class="btn-cancel" onclick="closeM('m-content')">Annuler</button><button class="btn" onclick="addContent()">Ajouter</button></div>
@@ -937,7 +944,10 @@ tbody td:first-child{color:var(--text);font-weight:500}
 // ⚠️ REMPLACE PAR TA CLÉ API ANTHROPIC → console.anthropic.com
 const ANTHROPIC_KEY = localStorage.getItem('bm_anthropic_key') || '';
 const AT='pat2HBwxBq9Yui3YK.60413e681b9aa13f425d23dfb861b4ddfc8bd13d62dceaf5a927f73f510be6ed';
-const BID='appcoXmZ3k9S1pcso';
+let BID='appcoXmZ3k9S1pcso';
+// Override BID from localStorage if set
+const _storedBID=localStorage.getItem('bm_base_id');
+if(_storedBID&&_storedBID.startsWith('app'))BID=_storedBID;
 const TL='tbl3yRvWU0WKQ93bF', TV='tbl0HBKnvQ7saJgaO', TE='tblshJoq1gJfC8JPf';
 const FL={nom:'fldSFtgynzaXcxa20',tel:'fldCfZW7gWgig8x2F',email:'fldCa0MN5qCYrbhiR',
   statut:'fldZAKunF3916maLj',canal:'fldnzjRJTWvYdTlel',src:'fldjAoRkOOabnC5KM',
@@ -1334,6 +1344,7 @@ function renderYTB(){
       <td style="font-size:10px">${v.date}</td>
       <td>${fmt(v.vues)}</td><td>${fE(v.ca)}</td>
       <td style="color:var(--${v.cpv>=4?'green':v.cpv>=2?'amber':'red'});font-family:var(--font-m)">${v.cpv}€</td>
+      <td style="color:${v.ctr>=4?'var(--green)':v.ctr>=2?'var(--amber)':v.ctr>0?'var(--red)':'var(--text3)'};font-family:var(--font-m)">${v.ctr!=null&&v.ctr>0?v.ctr+'%':'—'}</td>
       <td>${cpB(v,'j2')}</td><td>${cpB(v,'j5')}</td><td>${cpB(v,'j7')}</td>
       <td style="font-size:10px;color:var(--text3)">${v.temps?v.temps+'h':'—'}</td>
       <td><button class="btn-out" onclick="editContent(${videos.indexOf(v)})" style="padding:2px 7px;font-size:9px">✎</button></td>
@@ -1361,6 +1372,7 @@ function renderIG(){
       <td><span class="tag ${v.essai?'t-am':'t-bl'}" style="font-size:8px">${v.essai?'Essai':'Normal'}</span></td>
       <td>${fmt(v.vues)}</td><td>${v.inter||'—'}</td><td>${v.clics||'—'}</td>
       <td style="color:var(--${v.cpv>=4?'green':v.cpv>=2?'amber':'red'});font-family:var(--font-m)">${v.cpv}€</td>
+      <td style="color:${v.ctr>=4?'var(--green)':v.ctr>=2?'var(--amber)':v.ctr>0?'var(--red)':'var(--text3)'};font-family:var(--font-m)">${v.ctr!=null&&v.ctr>0?v.ctr+'%':'—'}</td>
       <td>${cpB(v,'j2')}</td><td>${cpB(v,'j5')}</td><td>${cpB(v,'j7')}</td>
       <td style="font-size:10px;color:var(--text3)">${v.temps?v.temps+'h':'—'}</td>
       <td><button class="btn-out" onclick="editContent(${videos.indexOf(v)})" style="padding:2px 7px;font-size:9px">✎</button></td>
@@ -1405,6 +1417,7 @@ function renderTikTok(){
       <td>${v.titre.length>28?v.titre.slice(0,28)+'…':v.titre}</td>
       <td>${fmt(v.vues)}</td><td>${v.inter||'—'}</td><td>${fE(v.ca)}</td>
       <td style="color:var(--${v.cpv>=4?'green':v.cpv>=2?'amber':'red'});font-family:var(--font-m)">${v.cpv}€</td>
+      <td style="color:${v.ctr>=4?'var(--green)':v.ctr>=2?'var(--amber)':v.ctr>0?'var(--red)':'var(--text3)'};font-family:var(--font-m)">${v.ctr!=null&&v.ctr>0?v.ctr+'%':'—'}</td>
       <td>${cpB(v,'j2')}</td><td>${cpB(v,'j5')}</td><td>${cpB(v,'j7')}</td>
       <td style="font-size:10px;color:var(--text3)">${v.temps?v.temps+'h':'—'}</td>
       <td><button class="btn-out" onclick="editContent(${videos.indexOf(v)})" style="padding:2px 7px;font-size:9px">✎</button></td>
@@ -1474,6 +1487,7 @@ function cpB(v,cp){
 function toggleEssai(){
   const canal=document.getElementById('c-canal').value;
   document.getElementById('c-essai-wrap').style.display=canal==='instagram'?'flex':'none';
+  document.getElementById('c-ctr-wrap').style.display=canal&&canal.startsWith('ytb')?'flex':'none';
 }
 
 function openAddContent(canal){
@@ -1490,6 +1504,7 @@ function addContent(){
   const v={titre,canal,date:document.getElementById('c-date').value||today,
     vues:gv('c-vues'),ca:gv('c-ca'),inter:gv('c-inter'),clics:gv('c-clics'),
     temps:gf('c-temps'),
+    ctr:canal.startsWith('ytb')?parseFloat(document.getElementById('c-ctr').value)||0:null,
     essai:canal==='instagram'&&document.getElementById('c-essai').value==='essai',
     checkpoints:{j1:{},j2:{},j5:{},j7:{}}};
   v.cpv=v.vues>0?(v.ca/v.vues).toFixed(2):0;
@@ -2149,11 +2164,26 @@ function saveApiKey(val){
     document.getElementById('api-key-dot').style.background='var(--red)';
   }
 }
+function saveBaseId(val){
+  if(val && val.startsWith('app')){
+    localStorage.setItem('bm_base_id', val);
+    // Reload with new base
+    leads=[];renderCRM();
+    syncAll();
+    toast('Base Airtable mise à jour');
+  }
+}
 function loadApiKey(){
   const k=localStorage.getItem('bm_api_key');
   if(k){
     document.getElementById('api-key-input').value=k;
     document.getElementById('api-key-dot').style.background='var(--green)';
+  }
+  const b=localStorage.getItem('bm_base_id');
+  if(b&&b.startsWith('app')){
+    document.getElementById('base-id-input').value=b;
+    // Override BID with stored value
+    window.BID_OVERRIDE=b;
   }
 }
 
