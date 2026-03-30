@@ -1935,8 +1935,13 @@ function deleteAd(idx){
 function populateProspectSelect(){
   const sel=document.getElementById('call-prospect');
   if(!sel)return;
-  sel.innerHTML='<option value="">Sélectionner un prospect Airtable</option>'
-    +leads.map(l=>'<option value="'+l.id+'">'+l.nom+(l.tel?' — '+l.tel:'')+'</option>').join('');
+  // Trier du plus récent au plus vieux
+  const sorted=[...leads].sort((a,b)=>new Date(b.createdTime||0)-new Date(a.createdTime||0));
+  sel.innerHTML='<option value="">— Sélectionner un prospect (plus récent en premier)</option>'
+    +sorted.map(l=>{
+      const date=l.createdTime?new Date(l.createdTime).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}):'';
+      return '<option value="'+l.id+'">'+(date?'['+date+'] ':'')+l.nom+(l.tel?' — '+l.tel:'')+(l.canal?' · '+l.canal:'')+'</option>';
+    }).join('');
 }
 
 function renderCalls(){
@@ -2056,7 +2061,7 @@ async function addCall(){
           'anthropic-dangerous-direct-browser-access':'true',
           'x-api-key':ANTHROPIC_KEY
         },
-        body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,
+        body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,
           messages:[{role:'user',content:`Tu es un expert en vente high-ticket coaching/business. Analyse ce transcript selon le TABLEAU D'ÉVALUATION CLOSING BOOSMENTOR officiel (200 points) et retourne UNIQUEMENT un JSON valide sans markdown.
 
 FRAMEWORK OFFICIEL BOOSMENTOR (200pts total):
