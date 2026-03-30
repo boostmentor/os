@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Boosmentor OS</title>
+<title>Boosmentor OS v2</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
@@ -942,7 +942,7 @@ tbody td:first-child{color:var(--text);font-weight:500}
 <script>
 // ═══ CONFIG ═══════════════════════════════════════════════════
 // ⚠️ REMPLACE PAR TA CLÉ API ANTHROPIC → console.anthropic.com
-const ANTHROPIC_KEY = localStorage.getItem('bm_anthropic_key') || '';
+const ANTHROPIC_KEY = localStorage.getItem('bm_api_key') || localStorage.getItem('bm_anthropic_key') || '';
 const AT='pat2HBwxBq9Yui3YK.60413e681b9aa13f425d23dfb861b4ddfc8bd13d62dceaf5a927f73f510be6ed';
 let BID='appcoXmZ3k9S1pcso';
 // Override BID from localStorage if set
@@ -2046,9 +2046,8 @@ async function addCall(){
 
   if(transcript){
     if(!ANTHROPIC_KEY){
-      const k=prompt("Clé API Anthropic (console.anthropic.com)");
-      if(k&&k.startsWith('sk-ant')){localStorage.setItem('bm_anthropic_key',k);location.reload();}
-      else{toast('Clé API invalide',true);return;}
+      toast('Clé API manquante — colle ta clé sk-ant-... en bas à gauche', true);
+      return;
     }
     const btn=document.getElementById('call-btn');btn.disabled=true;btn.textContent='Analyse IA en cours...';
     const fw=FRAMEWORK.categories.map((c,i)=>{
@@ -2168,6 +2167,7 @@ function addDoc(){
 function saveApiKey(val){
   if(val && val.startsWith('sk-ant')){
     localStorage.setItem('bm_api_key', val);
+    localStorage.setItem('bm_anthropic_key', val);
     document.getElementById('api-key-dot').style.background='var(--green)';
   } else {
     document.getElementById('api-key-dot').style.background='var(--red)';
