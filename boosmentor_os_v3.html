@@ -1011,7 +1011,7 @@ async function aAll(tid,qs=''){
   let recs=[],off=null;
   do{const d=await aF(tid+'?pageSize=100'+qs+(off?'&offset='+off:''));recs=recs.concat(d.records||[]);off=d.offset;}while(off);
   // Sort by createdTime descending (most recent first) as default
-  recs.sort((a,b)=>new Date(b.createdTime)-new Date(a.createdTime));
+  recs.sort((a,b)=>new Date(b.createdTime||0)-new Date(a.createdTime||0));
   return recs;
 }
 
@@ -1936,7 +1936,11 @@ function populateProspectSelect(){
   const sel=document.getElementById('call-prospect');
   if(!sel)return;
   // Trier du plus récent au plus vieux
-  const sorted=[...leads].sort((a,b)=>new Date(b.createdTime||0)-new Date(a.createdTime||0));
+  const sorted=[...leads].sort((a,b)=>{
+    const da=new Date(b.createdTime||b.dateEntree||0);
+    const db=new Date(a.createdTime||a.dateEntree||0);
+    return da-db;
+  });
   sel.innerHTML='<option value="">— Sélectionner un prospect (plus récent en premier)</option>'
     +sorted.map(l=>{
       const date=l.createdTime?new Date(l.createdTime).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}):'';
