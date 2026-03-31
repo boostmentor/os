@@ -1243,7 +1243,7 @@ function refreshCEO(){
   const totalCosts=costs.reduce((s,c)=>s+c.amount,0);
   const totalCA=calls.filter(c=>c.result==='Signé').reduce((s,c)=>s+(c.montant||0),0);
   const signes=leads.filter(l=>l.statut==='Signé').length;
-  const appels=calls.length;
+  const appels=leads.filter(l=>l.statut==='Appel réservé'||l.statut==='Signé'||l.statut==='Perdu').length||1;
   s('ceo-c',fE(totalCA));
   s('ceo-col',fE(totalCA));
   s('ceo-cost',fE(totalCosts));
@@ -1963,7 +1963,7 @@ function renderCalls(){
   calls.filter(c=>c.obj).forEach(c=>{objCounts[c.obj]=(objCounts[c.obj]||0)+1;});
   const topObj=Object.entries(objCounts).sort((a,b)=>b[1]-a[1])[0];
   s('v-appels',total);s('v-taux',pct(signes,total));s('v-ca',fE(totalCA));
-  s('v-obj1',topObj?topObj[0]:'—');s('v-score',avgScore?avgScore+'/10':'—');
+  s('v-obj1',topObj?topObj[0]:'—');s('v-score',avgScore?(avgScore/10).toFixed(1)+'/10':'—');
 
   const maxO=Math.max(...Object.values(objCounts),1);
   const objColors={Prix:'#EF4444','Pas le bon moment':'#F59E0B','Besoin de réfléchir':'#8B5CF6','Pas convaincu du résultat':'#4169E1',Conjoint:'#EC4899',Autre:'#A0A0C0'};
@@ -2002,7 +2002,7 @@ function renderAnalysis(a){
   let html='';
   // Total score with level badge
   if(a.score){
-    const sc=FRAMEWORK.scoring.find(s=>a.score>=s.min&&a.score<=s.max)||FRAMEWORK.scoring[0];
+    const sc=(FRAMEWORK.scoring||[]).find(s=>a.score>=s.min&&a.score<=s.max)||(FRAMEWORK.scoring||[])[0];
     html+=`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:${sc.color}22;border:1px solid ${sc.color}44;border-radius:8px;margin-bottom:12px">
       <div style="font-family:var(--font-d);font-size:28px;color:${sc.color}">${a.score}<span style="font-size:14px;color:var(--text3)">/${a.totalPts||200}</span></div>
       <div><div style="font-size:11px;font-weight:700;color:${sc.color}">${a.niveau||sc.label.split('—')[0].trim()}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">${sc.label}</div></div>
