@@ -9,7 +9,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --blue:#4169E1;--blue-dim:rgba(65,105,225,0.1);--blue-mid:rgba(65,105,225,0.25);
+  --blue:#4169E1;--blue-dim:rgba(65,105,225,0.1);--blue-mid:rgba(5,105,225,0.25);
   --bg:#080810;--s1:#0E0E1A;--s2:#141428;--s3:#1A1A30;
   --brd:rgba(65,105,225,0.12);--brd2:rgba(65,105,225,0.28);
   --text:#FFF;--text2:#A0A0C0;--text3:#404060;
@@ -1056,7 +1056,7 @@ async function loadLeads(){
 }
 
 async function loadEOD(){
-  const recs=await aAll(TE,'&sort[0][field]='+FE.date+'&sort[0][direction]=desc');
+  const recs=await aAll(TE,'&returnFieldsByFieldId=true&sort[0][field]='+FE.date+'&sort[0][direction]=desc');
   eodHistory=recs.map(r=>({date:r.fields[FE.date]||'',canal:r.fields[FE.canal]||'',
     msg:r.fields[FE.msg]||0,rel:r.fields[FE.rel]||0,rep:r.fields[FE.rep]||0,
     qual:r.fields[FE.qual]||0,prop:r.fields[FE.prop]||0,appels:r.fields[FE.appels]||0}));
@@ -2052,10 +2052,10 @@ async function addCall(){
     }
     const btn=document.getElementById('call-btn');btn.disabled=true;btn.textContent='Analyse IA en cours...';
     const fw=FRAMEWORK.categories.map((c,i)=>{
-      const criteriaStr=c.criteria.map(cr=>`   - ${cr.label} (max ${cr.pts}pts) — niveaux: ${FRAMEWORK.levels.map((l,li)=>l+':'+cr.levels[li]+'pts').join(', ')}`).join('\n');
+      const criteriaStr=c.criteria.map(cr=>`   - ${cr.label} (max ${cr.pts}pts) — niveaux: ${(FRAMEWORK.levels||[]).map((l,li)=>l+':'+cr.levels[li]+'pts').join(', ')}`).join('\n');
       return `${i+1}. ${c.name} — TOTAL ${c.pts}pts\n${criteriaStr}`;
     }).join('\n\n');
-    const scoringStr=FRAMEWORK.scoring.map(s=>`${s.min}-${s.max}pts: ${s.label}`).join('\n');
+    const scoringStr=(FRAMEWORK.scoring||[]).map(s=>`${s.min}-${s.max}pts: ${s.label}`).join('\n');
     try{
       const res=await fetch('https://api.anthropic.com/v1/messages',{
         method:'POST',
