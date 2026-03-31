@@ -2002,7 +2002,7 @@ function renderAnalysis(a){
   let html='';
   // Total score with level badge
   if(a.score){
-    const sc=(FRAMEWORK.scoring||[]).find(s=>a.score>=s.min&&a.score<=s.max)||(FRAMEWORK.scoring||[])[0];
+    const sc=(FRAMEWORK.scoring||[]).find(s=>a.score>=s.min&&a.score<=s.max)||(FRAMEWORK.scoring||[])[0]||{color:"var(--blue)",label:"—",niveau:"—"};
     html+=`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:${sc.color}22;border:1px solid ${sc.color}44;border-radius:8px;margin-bottom:12px">
       <div style="font-family:var(--font-d);font-size:28px;color:${sc.color}">${a.score}<span style="font-size:14px;color:var(--text3)">/${a.totalPts||200}</span></div>
       <div><div style="font-size:11px;font-weight:700;color:${sc.color}">${a.niveau||sc.label.split('—')[0].trim()}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">${sc.label}</div></div>
