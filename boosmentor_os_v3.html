@@ -552,7 +552,7 @@ tbody td:first-child{color:var(--text);font-weight:500}
         <option>Appel réservé</option><option>À relancer</option><option>Signé</option><option>Perdu</option>
       </select>
       <span style="font-size:10px;color:var(--text3)" id="crm-cnt">0 prospects</span>
-      <select id="crm-sort" onchange="renderCRM()" style="background:var(--s1);border:1px solid var(--brd);border-radius:5px;padding:5px 8px;font-size:10px;color:var(--text2);font-family:var(--font);outline:none">
+      <select id="crm-sort" onchange="applyCRMSort(this.value)" style="background:var(--s1);border:1px solid var(--brd);border-radius:5px;padding:5px 8px;font-size:10px;color:var(--text2);font-family:var(--font);outline:none">
         <option value="recent">Plus récent d'abord</option>
         <option value="oldest">Plus ancien d'abord</option>
         <option value="nom">Nom A→Z</option>
@@ -1618,6 +1618,13 @@ function switchProspect(tab,el){
 // ═══ CRM SORT ═════════════════════════════════════════════════
 let crmSortField = '';
 let crmSortDir = 'asc';
+
+function applyCRMSort(v){
+  if(v==='nom'){crmSortField='nom';crmSortDir='asc';}
+  else if(v==='oldest'){crmSortField='createdTime';crmSortDir='asc';}
+  else{crmSortField='createdTime';crmSortDir='desc';}
+  renderCRM();
+}
 
 function sortCRM(field){
   if(crmSortField===field){crmSortDir=crmSortDir==='asc'?'desc':'asc';}
