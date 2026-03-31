@@ -792,6 +792,48 @@ tbody td:first-child{color:var(--text);font-weight:500}
 </div>
 
 
+
+<div id="ventes-wrap" style="margin-top:28px;padding:0 0 20px 0">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <div style="font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em">🎉 Ventes &amp; Onboarding</div>
+    <button onclick="openVenteModal()" style="background:var(--green);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer">+ Nouvelle vente</button>
+  </div>
+  <div id="ventes-list"></div>
+</div>
+
+<div id="modal-vente" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:2000;align-items:center;justify-content:center">
+  <div style="background:#1a1a2e;border:1px solid var(--brd);border-radius:14px;padding:24px;width:min(560px,92vw);max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-size:16px;font-weight:700;color:var(--text)">🎉 Nouvelle Vente</div>
+      <button onclick="closeVenteModal()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:22px;line-height:1">&times;</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="fi" style="grid-column:1/-1"><div class="fl">Client / Prospect</div><input id="vte-nom" type="text" placeholder="Prénom Nom"></div>
+      <div class="fi"><div class="fl">Contracté (€)</div><input id="vte-montant-c" type="number" placeholder="0"></div>
+      <div class="fi"><div class="fl">Collecté (€)</div><input id="vte-montant-col" type="number" placeholder="0"></div>
+      <div class="fi" style="grid-column:1/-1"><div class="fl">Date de signature</div><input id="vte-date" type="date"></div>
+    </div>
+    <div class="fi" style="margin-bottom:16px">
+      <div class="fl">📝 Notes onboarding (pour ton assistante)</div>
+      <textarea id="vte-notes" rows="4" placeholder="Accès à créer, particularités du client, priorités..." style="width:100%;resize:vertical"></textarea>
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">✅ Checklist onboarding</div>
+      <div id="vte-checklist">
+        <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;cursor:pointer"><input type="checkbox" data-label="Créer accès espace client" style="accent-color:var(--green)"><span style="font-size:13px;color:var(--text2)">Créer accès espace client</span></label>
+        <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;cursor:pointer"><input type="checkbox" data-label="Ajouter au groupe Telegram/Slack" style="accent-color:var(--green)"><span style="font-size:13px;color:var(--text2)">Ajouter au groupe Telegram/Slack</span></label>
+        <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;cursor:pointer"><input type="checkbox" data-label="Envoyer lien Notion / Drive" style="accent-color:var(--green)"><span style="font-size:13px;color:var(--text2)">Envoyer lien Notion / Drive</span></label>
+        <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;cursor:pointer"><input type="checkbox" data-label="Envoyer contrat à signer" style="accent-color:var(--green)"><span style="font-size:13px;color:var(--text2)">Envoyer contrat à signer</span></label>
+        <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;cursor:pointer"><input type="checkbox" data-label="Planifier appel d’onboarding" style="accent-color:var(--green)"><span style="font-size:13px;color:var(--text2)">Planifier appel d’onboarding</span></label>
+        <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;cursor:pointer"><input type="checkbox" data-label="Configurer les outils" style="accent-color:var(--green)"><span style="font-size:13px;color:var(--text2)">Configurer les outils</span></label>
+        <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;cursor:pointer"><input type="checkbox" data-label="Envoyer email de bienvenue" style="accent-color:var(--green)"><span style="font-size:13px;color:var(--text2)">Envoyer email de bienvenue</span></label>
+        <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;cursor:pointer"><input type="checkbox" data-label="Premier point de suivi planifié" style="accent-color:var(--green)"><span style="font-size:13px;color:var(--text2)">Premier point de suivi planifié</span></label>
+      </div>
+    </div>
+    <button onclick="saveVente()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer">✓ Enregistrer la vente</button>
+  </div>
+</div>
+
 <!-- ═══ CLIENTS ═══ -->
 <div class="page" id="page-clients">
   <div class="sec-hd"><div class="sec-t">SUIVI CLIENTS</div><div class="sec-s">CA · Satisfaction · Appels qualifiés ajoutés</div></div>
@@ -1088,7 +1130,7 @@ function nav(p,el){
   if(p==='orga'){refreshOrga();renderCharts();}
   if(p==='prospect'){updateEOD();document.getElementById('eod-date').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});}
   if(p==='ads') refreshAds();
-  if(p==='vente'){renderCalls();populateProspectSelect();}
+  if(p==='vente'){renderCalls();renderVentes();populateProspectSelect();}
   if(p==='docs') renderDocs();
   if(p==='clients') renderClients();
 }
@@ -1997,47 +2039,77 @@ function renderCalls(){
 
 function toggleDetail(i){const e=document.getElementById('cd-'+i);if(e)e.style.display=e.style.display==='none'?'block':'none';}
 
-function renderAnalysis(a){
-  if(!a)return'';
-  let html='';
-  // Total score with level badge
-  if(a.score){
-    const sc=(FRAMEWORK.scoring||[]).find(s=>a.score>=s.min&&a.score<=s.max)||(FRAMEWORK.scoring||[])[0]||{color:"var(--blue)",label:"—",niveau:"—"};
-    html+=`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:${sc.color}22;border:1px solid ${sc.color}44;border-radius:8px;margin-bottom:12px">
-      <div style="font-family:var(--font-d);font-size:28px;color:${sc.color}">${a.score}<span style="font-size:14px;color:var(--text3)">/${a.totalPts||200}</span></div>
-      <div><div style="font-size:11px;font-weight:700;color:${sc.color}">${a.niveau||sc.label.split('—')[0].trim()}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">${sc.label}</div></div>
-    </div>`;
-  }
-  // Category scores grid
-  if(a.categoryScores){
-    html+=`<div class="score-grid">`;
-    FRAMEWORK.categories.forEach((cat,i)=>{
-      const score=a.categoryScores[i]||0;
-      const pctScore=Math.round(score/cat.pts*100);
-      const color=pctScore>=70?'var(--green)':pctScore>=40?'var(--amber)':'var(--red)';
-      html+=`<div class="score-item">
-        <div class="score-cat">${cat.name}</div>
-        <div class="score-bar-bg"><div class="score-bar-fill" style="width:${pctScore}%;background:${color}"></div></div>
-        <div class="score-val" style="color:${color}">${score}/${cat.pts}</div>
-      </div>`;
-    });
-    html+=`</div>`;
-  }
-  html+=`<div class="two-col" style="margin-bottom:0">
-    <div class="asec">
-      <div class="asec-t" style="color:var(--green)">✓ Points forts</div>
-      ${(a.positifs||[]).map(p=>'<div class="aitem"><div class="adot" style="background:var(--green);margin-top:4px"></div>'+p+'</div>').join('')}
-    </div>
-    <div class="asec">
-      <div class="asec-t" style="color:var(--red)">✗ Axes d\'amélioration</div>
-      ${(a.ameliorations||[]).map(p=>'<div class="aitem"><div class="adot" style="background:var(--red);margin-top:4px"></div>'+p+'</div>').join('')}
-    </div>
-  </div>
-  <div class="asec" style="margin-bottom:0">
-    <div class="asec-t" style="color:var(--blue)">→ Recommandations prioritaires</div>
-    ${(a.recommandations||[]).map(p=>'<div class="aitem"><div class="adot" style="background:var(--blue);margin-top:4px"></div>'+p+'</div>').join('')}
-  </div>`;
-  return html;
+function renderAnalysis(a) {
+  if (!a) return '';
+  const score10 = (a.score / 10).toFixed(1);
+  const pct = a.score;
+  const color = pct >= 80 ? 'var(--green)' : pct >= 60 ? '#f59e0b' : pct >= 40 ? '#f97316' : 'var(--red)';
+  const catHTML = FRAMEWORK.categories.map((cat, i) => {
+    const pts = (a.categoryScores || [])[i] || 0;
+    const pctCat = cat.pts > 0 ? Math.round((pts / cat.pts) * 100) : 0;
+    const catColor = pctCat >= 80 ? 'var(--green)' : pctCat >= 50 ? '#f59e0b' : 'var(--red)';
+    return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:12px;color:var(--text2)">${cat.name}</span><span style="font-size:12px;font-weight:700;color:${catColor}">${pts}/${cat.pts}pts</span></div><div style="height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden"><div style="width:${pctCat}%;height:100%;background:${catColor};border-radius:3px"></div></div></div>`;
+  }).join('');
+  const listHTML = (items, col, icon) => (items || []).map(t => `<div style="display:flex;gap:8px;margin-bottom:7px;align-items:flex-start"><span style="color:${col};font-size:13px;flex-shrink:0">${icon}</span><span style="font-size:13px;color:var(--text2);line-height:1.4">${t}</span></div>`).join('');
+  return `<div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.06);padding-top:14px"><div style="display:flex;align-items:center;gap:14px;margin-bottom:16px"><div style="background:${color}22;border:2px solid ${color}44;border-radius:10px;padding:10px 16px;text-align:center;flex-shrink:0"><div style="font-size:28px;font-weight:800;color:${color};line-height:1">${score10}</div><div style="font-size:10px;color:var(--text3);margin-top:2px;font-weight:600">/10</div></div><div><div style="font-size:14px;font-weight:700;color:var(--text)">${a.niveau || '—'}</div><div style="font-size:12px;color:var(--text3);margin-top:4px;line-height:1.4">${a.appreciationGlobale || ''}</div></div></div><div style="margin-bottom:14px"><div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px">📊 Barème par critère</div>${catHTML}</div>${(a.positifs || []).length ? `<div style="margin-bottom:14px"><div style="font-size:10px;font-weight:700;color:var(--green);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px">✓ Points forts</div>${listHTML(a.positifs, 'var(--green)', '✓')}</div>` : ''}${(a.ameliorations || []).length ? `<div style="margin-bottom:14px"><div style="font-size:10px;font-weight:700;color:var(--red);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px">✗ Axes d’amélioration</div>${listHTML(a.ameliorations, 'var(--red)', '✗')}</div>` : ''}${(a.recommandations || []).length ? `<div><div style="font-size:10px;font-weight:700;color:var(--blue);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px">→ Focus prochain appel</div>${listHTML(a.recommandations, 'var(--blue)', '→')}</div>` : ''}</div>`;
+}
+
+function openVenteModal(prefillNom) {
+  document.getElementById('modal-vente').style.display = 'flex';
+  const d = new Date().toISOString().split('T')[0];
+  document.getElementById('vte-date').value = d;
+  if (prefillNom) document.getElementById('vte-nom').value = prefillNom;
+}
+function closeVenteModal() {
+  document.getElementById('modal-vente').style.display = 'none';
+  ['vte-nom','vte-montant-c','vte-montant-col','vte-notes'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  document.querySelectorAll('#vte-checklist input[type=checkbox]').forEach(cb => cb.checked = false);
+}
+function saveVente() {
+  const nom = document.getElementById('vte-nom').value.trim();
+  if (!nom) { alert('Remplis le nom du client'); return; }
+  const checks = [...document.querySelectorAll('#vte-checklist input[type=checkbox]')];
+  const vente = {
+    id: Date.now(),
+    date: document.getElementById('vte-date').value || new Date().toISOString().split('T')[0],
+    nom,
+    montantC: parseFloat(document.getElementById('vte-montant-c').value) || 0,
+    montantCol: parseFloat(document.getElementById('vte-montant-col').value) || 0,
+    notes: document.getElementById('vte-notes').value.trim(),
+    checklist: checks.map(cb => ({ label: cb.dataset.label, done: cb.checked }))
+  };
+  const ventes = JSON.parse(localStorage.getItem('bm_ventes') || '[]');
+  ventes.unshift(vente);
+  localStorage.setItem('bm_ventes', JSON.stringify(ventes));
+  closeVenteModal();
+  renderVentes();
+}
+function deleteVente(id) {
+  if (!confirm('Supprimer cette vente ?')) return;
+  let v = JSON.parse(localStorage.getItem('bm_ventes') || '[]');
+  localStorage.setItem('bm_ventes', JSON.stringify(v.filter(x => x.id !== id)));
+  renderVentes();
+}
+function toggleVenteCheck(venteId, idx) {
+  const v = JSON.parse(localStorage.getItem('bm_ventes') || '[]');
+  const vente = v.find(x => x.id === venteId);
+  if (vente && vente.checklist[idx]) vente.checklist[idx].done = !vente.checklist[idx].done;
+  localStorage.setItem('bm_ventes', JSON.stringify(v));
+  renderVentes();
+}
+function renderVentes() {
+  const el = document.getElementById('ventes-list');
+  if (!el) return;
+  const ventes = JSON.parse(localStorage.getItem('bm_ventes') || '[]');
+  if (!ventes.length) { el.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:24px">Aucune vente enregistrée — clique sur + Nouvelle vente</div>'; return; }
+  el.innerHTML = ventes.map(v => {
+    const dateStr = v.date ? new Date(v.date+'T12:00:00').toLocaleDateString('fr-FR') : '—';
+    const done = (v.checklist||[]).filter(c=>c.done).length;
+    const total = (v.checklist||[]).length;
+    const pct = total ? Math.round((done/total)*100) : 0;
+    const checks = (v.checklist||[]).map((c,i) => `<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer"><input type="checkbox" ${c.done?'checked':''} onchange="toggleVenteCheck(${v.id},${i})" style="accent-color:var(--green)"><span style="font-size:12px;color:${c.done?'var(--text3)':'var(--text2)'};text-decoration:${c.done?'line-through':'none'}">${c.label}</span></label>`).join('');
+    return `<div style="background:var(--s1);border:1px solid var(--brd);border-radius:10px;padding:16px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div><div style="font-size:15px;font-weight:700;color:var(--text)">${v.nom}</div><div style="font-size:12px;color:var(--text3);margin-top:2px">${dateStr}</div></div><div style="display:flex;gap:14px;align-items:center"><div style="text-align:right"><div style="font-size:10px;color:var(--text3)">Contracté</div><div style="font-size:14px;font-weight:700;color:var(--green)">${(v.montantC||0).toLocaleString('fr-FR')}€</div></div><div style="text-align:right"><div style="font-size:10px;color:var(--text3)">Collecté</div><div style="font-size:14px;font-weight:700;color:#f59e0b">${(v.montantCol||0).toLocaleString('fr-FR')}€</div></div><button onclick="deleteVente(${v.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:4px" title="Supprimer">✕</button></div></div>${v.notes?`<div style="font-size:12px;color:var(--text2);background:rgba(0,0,0,.2);border-radius:6px;padding:10px;margin-bottom:10px;white-space:pre-wrap">${v.notes}</div>`:''}${total?`<div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Onboarding — ${done}/${total} (${pct}%)</div></div><div style="height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin-bottom:8px"><div style="width:${pct}%;height:100%;background:var(--green);border-radius:2px;transition:width .3s"></div></div>${checks}</div>`:''}</div>`;
+  }).join('');
 }
 
 async function addCall(){
