@@ -358,6 +358,13 @@ tbody td:first-child{color:var(--text);font-weight:500}
       </div>
     </div>
     <div class="card">
+      <div class="card-h"><span class="card-t">KPIs YouTube</span><button class="btn-out" onclick="openMetricsModal('youtube')" style="padding:2px 8px;font-size:10px">✎ Modifier</button></div>
+      <div class="card-b"><div class="kpi-g" style="grid-template-columns:1fr 1fr">
+        <div class="kpi"><div class="kpi-l">Abonnés</div><div class="kpi-v bl" id="ytb-ab">0</div></div>
+        <div class="kpi"><div class="kpi-l">Impressions</div><div class="kpi-v" id="ytb-imp">0</div></div>
+      </div></div>
+    </div>
+    <div class="card">
       <div class="card-h">
         <span class="card-t">Toutes les vidéos</span>
         <div style="display:flex;gap:6px">
@@ -384,7 +391,7 @@ tbody td:first-child{color:var(--text);font-weight:500}
         <div class="card-b"><div class="chart-wrap"><canvas id="chart-ig"></canvas></div></div>
       </div>
       <div class="card">
-        <div class="card-h"><span class="card-t">KPIs Instagram</span></div>
+        <div class="card-h"><span class="card-t">KPIs Instagram</span><button class="btn-out" onclick="openMetricsModal('instagram')" style="padding:2px 8px;font-size:10px">✎ Modifier</button></div>
         <div class="card-b">
           <div class="kpi-g" style="grid-template-columns:1fr 1fr;margin-bottom:0">
             <div class="kpi"><div class="kpi-l">Abonnés</div><div class="kpi-v bl" id="ig-ab">0</div></div>
@@ -413,7 +420,7 @@ tbody td:first-child{color:var(--text);font-weight:500}
         <div class="card-b"><div class="chart-wrap"><canvas id="chart-li"></canvas></div></div>
       </div>
       <div class="card">
-        <div class="card-h"><span class="card-t">KPIs LinkedIn</span></div>
+        <div class="card-h"><span class="card-t">KPIs LinkedIn</span><button class="btn-out" onclick="openMetricsModal('linkedin')" style="padding:2px 8px;font-size:10px">✎ Modifier</button></div>
         <div class="card-b">
           <div class="kpi-g" style="grid-template-columns:1fr 1fr;margin-bottom:0">
             <div class="kpi"><div class="kpi-l">Abonnés</div><div class="kpi-v bl" id="li-ab">0</div></div>
@@ -1410,6 +1417,9 @@ function refreshOrga(){
 
 function renderYTB(){
   const filter=document.getElementById('ytb-filter')?.value||'';
+  const my=metrics['youtube']||{};
+  const ytbAbEl=document.getElementById('ytb-ab');if(ytbAbEl)ytbAbEl.textContent=fmt(my.abonnes||0);
+  const ytbImpEl=document.getElementById('ytb-imp');if(ytbImpEl)ytbImpEl.textContent=fmt(my.impressions||0);
   const vids=videos.filter(v=>v.canal&&v.canal.startsWith('ytb')&&(filter===''||v.canal===filter));
   const tbl=document.getElementById('ytb-table');
   tbl.innerHTML=vids.length===0?'<tr><td colspan="11" class="empty">Aucune vidéo</td></tr>'
@@ -2464,6 +2474,32 @@ refreshAds();refreshConfs();
   try{await syncAll();}catch(e){}
   renderDocs();refreshCEO();renderClients();loadApiKey();
 })();
+
+const METRICS_FIELDS={youtube:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'impressions',label:'Impressions totales',type:'number'}],instagram:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'newAud',label:'Nouvelle audience (%)',type:'number'}],linkedin:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'appels',label:'Appels générés',type:'number'}]};
+let __metricsCanal='';
+function openMetricsModal(canal){
+  __metricsCanal=canal;
+  const labels={youtube:'YouTube',instagram:'Instagram',linkedin:'LinkedIn'};
+  document.getElementById('m-metrics-title').textContent='Métriques '+(labels[canal]||canal);
+  const m=metrics[canal]||{};
+  const fields=METRICS_FIELDS[canal]||[];
+  document.getElementById('m-metrics-fields').innerHTML=fields.map(f=>'<div class="fi"><div class="fl">'+f.label+'</div><input type="'+f.type+'" id="mf-'+f.key+'" value="'+(m[f.key]||0)+'" placeholder="0" style="width:100%"></div>').join('');
+  openM('m-metrics');
+}
+function saveMetrics(){
+  const fields=METRICS_FIELDS[__metricsCanal]||[];
+  if(!metrics[__metricsCanal])metrics[__metricsCanal]={};
+  fields.forEach(f=>{const el=document.getElementById('mf-'+f.key);if(el)metrics[__metricsCanal][f.key]=parseFloat(el.value)||0;});
+  saveL();closeM('m-metrics');refreshOrga();toast('Métriques sauvegardées');
+}
 </script>
+
+<div class="moverlay" id="m-metrics">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-t" id="m-metrics-title">Métriques</div><button class="modal-x" onclick="closeM('m-metrics')">×</button></div>
+    <div class="fr" id="m-metrics-fields" style="gap:10px;margin-top:12px"></div>
+    <div style="margin-top:16px;text-align:right"><button class="btn" onclick="saveMetrics()">Enregistrer</button></div>
+  </div>
+</div>
 </body>
 </html>
