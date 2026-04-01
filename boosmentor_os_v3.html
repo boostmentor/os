@@ -796,19 +796,20 @@ tbody td:first-child{color:var(--text);font-weight:500}
         </div>
         <div class="fi" style="grid-column:1/-1;margin-bottom:10px">
           <div class="fl">Taux de qualification — <span id="qual-score-live" style="font-weight:700;color:var(--amber)">0/10</span></div>
-          <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;padding:10px;background:rgba(255,255,255,.03);border-radius:6px;border:1px solid rgba(255,255,255,.06)">
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qa1" onchange="updateQualScore()"> A1 — Lieu France/DOM/FR <span style="color:var(--amber);margin-left:auto">+1</span></label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qa2" onchange="updateQualScore()"> A2 — Moyen paiement valide <span style="color:var(--amber);margin-left:auto">+1</span></label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qb" onchange="updateQualScore()"> B — Coach/formateur/consultant/agence <span style="color:var(--amber);margin-left:auto">+2</span></label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qc" onchange="updateQualScore()"> C — Problème identifié <span style="color:var(--amber);margin-left:auto">+1</span></label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qd" onchange="updateQualScore()"> D — Désir fort (20-50 appels/mois) <span style="color:var(--amber);margin-left:auto">+1</span></label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qe" onchange="updateQualScore()"> E — Cohérence solution <span style="color:var(--amber);margin-left:auto">+1</span></label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qf" onchange="updateQualScore()"> F — Prospect présent <span style="color:var(--amber);margin-left:auto">+1</span></label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qg" onchange="updateQualScore()"> G — Page confirmation vue <span style="color:var(--amber);margin-left:auto">+1</span></label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qi" onchange="updateQualScore()"> I — Motivation 6-10 <span style="color:var(--amber);margin-left:auto">+1</span></label>
+          <div style="margin-top:8px;padding:12px;background:rgba(255,255,255,.03);border-radius:6px;border:1px solid rgba(255,255,255,.08)">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:8px">Coche les critères validés par le prospect :</div>
+            <label style="display:block;cursor:pointer;font-size:12px;color:var(--text2);padding:3px 0"><input type="checkbox" id="qa1" onchange="updateQualScore()" style="margin-right:6px"> A1 — Lieu France / DOM-TOM / FR <span style="color:var(--amber);font-size:11px">+1</span></label>
+            <label style="display:block;cursor:pointer;font-size:12px;color:var(--text2);padding:3px 0"><input type="checkbox" id="qa2" onchange="updateQualScore()" style="margin-right:6px"> A2 — Moyen de paiement valide <span style="color:var(--amber);font-size:11px">+1</span></label>
+            <label style="display:block;cursor:pointer;font-size:12px;color:var(--text2);padding:3px 0"><input type="checkbox" id="qb" onchange="updateQualScore()" style="margin-right:6px"> B — Coach / formateur / consultant / agence <span style="color:var(--amber);font-size:11px">+2</span></label>
+            <label style="display:block;cursor:pointer;font-size:12px;color:var(--text2);padding:3px 0"><input type="checkbox" id="qc" onchange="updateQualScore()" style="margin-right:6px"> C — Problème identifié (+appels, visibilité, conversion, système) <span style="color:var(--amber);font-size:11px">+1</span></label>
+            <label style="display:block;cursor:pointer;font-size:12px;color:var(--text2);padding:3px 0"><input type="checkbox" id="qd" onchange="updateQualScore()" style="margin-right:6px"> D — Désir fort (20–50 appels / mois, développement) <span style="color:var(--amber);font-size:11px">+1</span></label>
+            <label style="display:block;cursor:pointer;font-size:12px;color:var(--text2);padding:3px 0"><input type="checkbox" id="qe" onchange="updateQualScore()" style="margin-right:6px"> E — Cohérence solution avec le problème <span style="color:var(--amber);font-size:11px">+1</span></label>
+            <label style="display:block;cursor:pointer;font-size:12px;color:var(--text2);padding:3px 0"><input type="checkbox" id="qf" onchange="updateQualScore()" style="margin-right:6px"> F — Prospect présent sur l’appel <span style="color:var(--amber);font-size:11px">+1</span></label>
+            <label style="display:block;cursor:pointer;font-size:12px;color:var(--text2);padding:3px 0"><input type="checkbox" id="qg" onchange="updateQualScore()" style="margin-right:6px"> G — Page de confirmation vue avant l’appel <span style="color:var(--amber);font-size:11px">+1</span></label>
+            <label style="display:block;cursor:pointer;font-size:12px;color:var(--text2);padding:3px 0"><input type="checkbox" id="qi" onchange="updateQualScore()" style="margin-right:6px"> I — Motivation 6/10 ou plus <span style="color:var(--amber);font-size:11px">+1</span></label>
           </div>
         </div>
-        <div class="fi" style="margin-bottom:10px">
+                <div class="fi" style="margin-bottom:10px">
           <div class="fl">Transcript de l'appel</div>
           <textarea id="call-transcript" placeholder="Colle le transcript ici (iClosed, Otter...) — l'IA analysera selon le framework Boosmentor" style="min-height:100px"></textarea>
         </div>
