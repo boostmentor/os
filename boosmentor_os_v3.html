@@ -1335,7 +1335,7 @@ function refreshCEO(){
   // Canal CA (from calls)
   const colors={Instagram:'#EC4899',LinkedIn:'#0A66C2',Publicité:'#F59E0B',Skool:'#8B5CF6',iClosed:'#4169E1'};
   const canalData={};
-  leads.filter(l=>l.statut==='Signé').forEach(l=>{canalData[l.canal||'Autre']=(canalData[l.canal||'Autre']||0)+1;});
+  lf.filter(l=>l.statut==='Signé').forEach(l=>{canalData[l.canal||'Autre']=(canalData[l.canal||'Autre']||0)+1;});
   const maxC=Math.max(...Object.values(canalData),1);
   const canalEl=document.getElementById('ceo-canal');
   canalEl.innerHTML=Object.keys(canalData).length===0?'<div class="empty">Aucune vente</div>'
