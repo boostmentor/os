@@ -445,7 +445,7 @@ tbody td:first-child{color:var(--text);font-weight:500}
         <div class="card-b"><div class="chart-wrap"><canvas id="chart-tiktok"></canvas></div></div>
       </div>
       <div class="card">
-        <div class="card-h"><span class="card-t">KPIs TikTok</span></div>
+        <div class="card-h"><span class="card-t">KPIs TikTok</span><button class="btn-out" onclick="openMetricsModal('tiktok')" style="padding:2px 8px;font-size:10px">✎ Modifier</button></div>
         <div class="card-b">
           <div class="kpi-g" style="grid-template-columns:1fr 1fr;margin-bottom:0">
             <div class="kpi"><div class="kpi-l">Abonnés</div><div class="kpi-v bl" id="tt-ab">0</div></div>
@@ -2475,11 +2475,11 @@ refreshAds();refreshConfs();
   renderDocs();refreshCEO();renderClients();loadApiKey();
 })();
 
-const METRICS_FIELDS={youtube:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'impressions',label:'Impressions totales',type:'number'}],instagram:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'newAud',label:'Nouvelle audience (%)',type:'number'}],linkedin:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'appels',label:'Appels générés',type:'number'}]};
+const METRICS_FIELDS={youtube:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'impressions',label:'Impressions totales',type:'number'}],instagram:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'newAud',label:'Nouvelle audience (%)',type:'number'}],linkedin:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'appels',label:'Appels générés',type:'number'}],tiktok:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'appels',label:'Appels générés',type:'number'}]};
 let __metricsCanal='';
 function openMetricsModal(canal){
   __metricsCanal=canal;
-  const labels={youtube:'YouTube',instagram:'Instagram',linkedin:'LinkedIn'};
+  const labels={youtube:'YouTube',instagram:'Instagram',linkedin:'LinkedIn',tiktok:'TikTok'};
   document.getElementById('m-metrics-title').textContent='Métriques '+(labels[canal]||canal);
   const m=metrics[canal]||{};
   const fields=METRICS_FIELDS[canal]||[];
