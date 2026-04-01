@@ -524,6 +524,7 @@ tbody td:first-child{color:var(--text);font-weight:500}
   <div id="p-histo" style="display:none">
     <div class="kpi-g">
       <div class="kpi"><div class="kpi-l">Messages total</div><div class="kpi-v bl" id="h-msg">0</div></div>
+      <div class="kpi"><div class="kpi-l">Relances</div><div class="kpi-v" id="h-rel">0</div></div>
       <div class="kpi"><div class="kpi-l">Réponses</div><div class="kpi-v" id="h-rep">0</div><div class="kpi-d" id="h-rep-r">—</div></div>
       <div class="kpi"><div class="kpi-l">Qualifiés</div><div class="kpi-v am" id="h-qual">0</div><div class="kpi-d" id="h-qual-r">—</div></div>
       <div class="kpi"><div class="kpi-l">Appels réservés</div><div class="kpi-v gr" id="h-appels">0</div><div class="kpi-d" id="h-appels-r">—</div></div>
@@ -537,8 +538,8 @@ tbody td:first-child{color:var(--text);font-weight:500}
     </div>
     <div class="card">
       <div class="card-h"><span class="card-t">Rapports EOD</span><span class="card-a" onclick="loadEOD()">↻ Sync</span></div>
-      <table><thead><tr><th>Date</th><th>Canal</th><th>Messages</th><th>Relances</th><th>Réponses</th><th>Qualifiés</th><th>Propositions</th><th>Appels</th><th>Temps</th><th>msg→appel</th></tr></thead>
-      <tbody id="h-table"><tr><td colspan="10" class="empty">Chargement...</td></tr></tbody></table>
+      <table><thead><tr><th>Date</th><th>Canal</th><th>Messages</th><th>Relances</th><th>Réponses</th><th>Qualifiés</th><th>Propositions</th><th>Appels</th><th>Temps</th><th>msg→appel</th><th></th></tr></thead>
+      <tbody id="h-table"><tr><td colspan="11" class="empty">Chargement...</td></tr></tbody></table>
     </div>
   </div>
 
@@ -673,6 +674,9 @@ tbody td:first-child{color:var(--text);font-weight:500}
           <div class="fi"><div class="fl">Impressions</div><input type="number" id="ad-imp" placeholder="0"></div>
           <div class="fi"><div class="fl">Clics</div><input type="number" id="ad-clics" placeholder="0"></div>
           <div class="fi"><div class="fl">Leads générés</div><input type="number" id="ad-leads" placeholder="0"></div>
+          <div class="fi"><div class="fl">Appels réservés</div><input type="number" id="ad-app-res" placeholder="0"></div>
+          <div class="fi"><div class="fl">Appels présents</div><input type="number" id="ad-app-pres" placeholder="0"></div>
+          <div class="fi"><div class="fl">Appels qualifiés</div><input type="number" id="ad-app-qual" placeholder="0"></div>
           <div class="fi"><div class="fl">CA tracé (€)</div><input type="number" id="ad-ca" placeholder="0"></div>
           <div class="fi"><div class="fl">Statut</div><select id="ad-statut"><option>Active</option><option>En test</option><option>Pausée</option><option>Arrêtée</option></select></div>
         </div>
@@ -761,6 +765,7 @@ tbody td:first-child{color:var(--text);font-weight:500}
     <div class="kpi"><div class="kpi-l">CA contracté</div><div class="kpi-v am" id="v-ca">0€</div></div>
     <div class="kpi"><div class="kpi-l">Objection #1</div><div class="kpi-v" id="v-obj1" style="font-size:13px">—</div></div>
     <div class="kpi"><div class="kpi-l">Score moyen IA</div><div class="kpi-v bl" id="v-score">—/10</div></div>
+    <div class="kpi"><div class="kpi-l">Qualification moy.</div><div class="kpi-v am" id="v-qual">—/10</div><div class="kpi-d">critères prospect</div></div>
   </div>
 
   <div class="two-col">
@@ -787,6 +792,20 @@ tbody td:first-child{color:var(--text);font-weight:500}
               <option>Besoin de réfléchir</option><option>Pas convaincu du résultat</option>
               <option>Conjoint</option><option>Autre</option>
             </select>
+          </div>
+        </div>
+        <div class="fi" style="grid-column:1/-1;margin-bottom:10px">
+          <div class="fl">Taux de qualification — <span id="qual-score-live" style="font-weight:700;color:var(--amber)">0/10</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin-top:8px;padding:10px;background:rgba(255,255,255,.03);border-radius:6px;border:1px solid rgba(255,255,255,.06)">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qa1" onchange="updateQualScore()"> A1 — Lieu France/DOM/FR <span style="color:var(--amber);margin-left:auto">+1</span></label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qa2" onchange="updateQualScore()"> A2 — Moyen paiement valide <span style="color:var(--amber);margin-left:auto">+1</span></label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qb" onchange="updateQualScore()"> B — Coach/formateur/consultant/agence <span style="color:var(--amber);margin-left:auto">+2</span></label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qc" onchange="updateQualScore()"> C — Problème identifié <span style="color:var(--amber);margin-left:auto">+1</span></label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qd" onchange="updateQualScore()"> D — Désir fort (20-50 appels/mois) <span style="color:var(--amber);margin-left:auto">+1</span></label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qe" onchange="updateQualScore()"> E — Cohérence solution <span style="color:var(--amber);margin-left:auto">+1</span></label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qf" onchange="updateQualScore()"> F — Prospect présent <span style="color:var(--amber);margin-left:auto">+1</span></label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qg" onchange="updateQualScore()"> G — Page confirmation vue <span style="color:var(--amber);margin-left:auto">+1</span></label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)"><input type="checkbox" id="qi" onchange="updateQualScore()"> I — Motivation 6-10 <span style="color:var(--amber);margin-left:auto">+1</span></label>
           </div>
         </div>
         <div class="fi" style="margin-bottom:10px">
@@ -1115,7 +1134,7 @@ async function loadLeads(){
 
 async function loadEOD(){
   const recs=await aAll(TE,'&returnFieldsByFieldId=true&sort[0][field]='+FE.date+'&sort[0][direction]=desc');
-  eodHistory=recs.map(r=>({date:r.fields[FE.date]||'',canal:r.fields[FE.canal]||'',
+  eodHistory=recs.map(r=>({id:r.id,date:r.fields[FE.date]||'',canal:r.fields[FE.canal]||'',
     msg:r.fields[FE.msg]||0,rel:r.fields[FE.rel]||0,rep:r.fields[FE.rep]||0,
     qual:r.fields[FE.qual]||0,prop:r.fields[FE.prop]||0,appels:r.fields[FE.appels]||0}));
   renderHisto(); return eodHistory;
@@ -1605,6 +1624,25 @@ function selCanal(el){
   currentEODCanal=el.dataset.c;
 }
 
+function updateQualScore(){
+  const pts=[1,1,2,1,1,1,1,1,1];
+  const ids=['qa1','qa2','qb','qc','qd','qe','qf','qg','qi'];
+  const score=ids.reduce((s,id,i)=>s+(document.getElementById(id)?.checked?pts[i]:0),0);
+  const el=document.getElementById('qual-score-live');
+  if(el){el.textContent=score+'/10';el.style.color=score>=7?'var(--green)':score>=4?'var(--amber)':'var(--red)';}
+}
+function getCallQualScore(){
+  const pts=[1,1,2,1,1,1,1,1,1];
+  const ids=['qa1','qa2','qb','qc','qd','qe','qf','qg','qi'];
+  return ids.reduce((s,id,i)=>s+(document.getElementById(id)?.checked?pts[i]:0),0);
+}
+function resetQualCheckboxes(){
+  ['qa1','qa2','qb','qc','qd','qe','qf','qg','qi'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.checked=false;
+  });
+  updateQualScore();
+}
+
 function updateEOD(){
   const msg=gv('e-msg'),rep=gv('e-rep'),qual=gv('e-qual'),prop=gv('e-prop'),appels=gv('e-appels');
   const max=Math.max(msg,1);
@@ -1642,7 +1680,8 @@ function renderHisto(){
   const tQual=eodHistory.reduce((s,r)=>s+r.qual,0);
   const tProp=eodHistory.reduce((s,r)=>s+r.prop,0);
   const tApp=eodHistory.reduce((s,r)=>s+r.appels,0);
-  s('h-msg',tMsg);s('h-rep',tRep);s('h-qual',tQual);s('h-appels',tApp);
+  const tRel=eodHistory.reduce((s,r)=>s+r.rel,0);
+  s('h-msg',tMsg);s('h-rel',tRel);s('h-rep',tRep);s('h-qual',tQual);s('h-appels',tApp);
   s('h-best',eodHistory.length>0?Math.max(...eodHistory.map(r=>r.msg)):0);
   s('h-jours',eodHistory.length);
   s('h-rep-r',pct(tRep,tMsg)+' taux');s('h-qual-r',pct(tQual,tRep)+' taux');
@@ -1652,8 +1691,8 @@ function renderHisto(){
     Publicité:'<span class="tag t-am">Pub</span>',Skool:'<span class="tag t-pu">Skool</span>',
     'iClosed potentiel':'<span class="tag t-bl">iClosed</span>'};
   document.getElementById('h-table').innerHTML=eodHistory.length===0
-    ?'<tr><td colspan="10" class="empty">Aucun rapport</td></tr>'
-    :eodHistory.map(r=>`<tr>
+    ?'<tr><td colspan="11" class="empty">Aucun rapport</td></tr>'
+    :eodHistory.map((r,i)=>`<tr>
       <td>${r.date}</td><td>${ct[r.canal]||r.canal}</td>
       <td style="color:var(--blue);font-weight:600">${r.msg}</td><td>${r.rel}</td>
       <td>${r.rep} <span style="font-size:9px;color:var(--text3)">${pct(r.rep,r.msg)}</span></td>
@@ -1662,7 +1701,55 @@ function renderHisto(){
       <td style="color:var(--green);font-weight:600">${r.appels}</td>
       <td style="font-size:9px;color:var(--text3)">—</td>
       <td style="font-family:var(--font-m);font-size:10px">${pct(r.appels,r.msg)}</td>
+      <td><button onclick="editEODReport(${i})" title="Modifier ce rapport" style="padding:2px 8px;font-size:11px;cursor:pointer;background:rgba(65,105,225,.15);border:1px solid rgba(65,105,225,.3);border-radius:3px;color:var(--text2)">✏</button></td>
     </tr>`).join('');
+}
+
+function editEODReport(idx){
+  const r=eodHistory[idx];
+  // Switch to EOD tab
+  document.getElementById('p-histo').style.display='none';
+  document.getElementById('p-eod').style.display='';
+  document.querySelectorAll('#page-prospect .tab-btn').forEach(b=>{
+    b.classList.remove('active');
+    if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'eod'"))b.classList.add('active');
+  });
+  setTimeout(()=>{
+    document.getElementById('e-msg').value=r.msg||0;
+    document.getElementById('e-rel').value=r.rel||0;
+    document.getElementById('e-rep').value=r.rep||0;
+    document.getElementById('e-qual').value=r.qual||0;
+    document.getElementById('e-prop').value=r.prop||0;
+    document.getElementById('e-appels').value=r.appels||0;
+    updateEOD();
+    window.__editEODIdx=idx;
+    window.__editEODId=r.id||null;
+    document.getElementById('eod-btn').textContent='Mettre à jour le rapport';
+    document.getElementById('eod-btn').onclick=saveEditEOD;
+  },50);
+  toast('Rapport du '+r.date+' chargé — modifie et enregistre');
+}
+
+async function saveEditEOD(){
+  const idx=window.__editEODIdx;
+  const id=window.__editEODId;
+  const msg=gv('e-msg'),rel=gv('e-rel'),rep=gv('e-rep'),qual=gv('e-qual'),prop=gv('e-prop'),appels=gv('e-appels');
+  if(!msg){toast('Messages requis',true);return;}
+  eodHistory[idx]={...eodHistory[idx],msg,rel,rep,qual,prop,appels};
+  renderHisto();
+  if(id){
+    try{
+      await aF(TE+'/'+id,{method:'PATCH',body:JSON.stringify({fields:{
+        [FE.msg]:msg,[FE.rel]:rel,[FE.rep]:rep,[FE.qual]:qual,[FE.prop]:prop,[FE.appels]:appels
+      }})});
+      toast('Rapport mis à jour dans Airtable !');
+    }catch(e){toast('Mis à jour localement (erreur Airtable)',true);}
+  } else {
+    toast('Rapport mis à jour localement');
+  }
+  window.__editEODIdx=null;window.__editEODId=null;
+  document.getElementById('eod-btn').textContent='Valider → Airtable';
+  document.getElementById('eod-btn').onclick=submitEOD;
 }
 
 function switchProspect(tab,el){
@@ -1925,7 +2012,7 @@ function addAd(){
   if(!nom){toast('Nom requis',true);return;}
   ads.push({nom,type:document.getElementById('ad-type').value,
     budget:gv('ad-budget'),impressions:gv('ad-imp'),clics:gv('ad-clics'),
-    leads:gv('ad-leads'),ca:gv('ad-ca'),statut:document.getElementById('ad-statut').value});
+    leads:gv('ad-leads'),appRes:gv('ad-app-res'),appPres:gv('ad-app-pres'),appQual:gv('ad-app-qual'),ca:gv('ad-ca'),statut:document.getElementById('ad-statut').value});
   saveL();refreshAds();
   ['ad-nom','ad-budget','ad-imp','ad-clics','ad-leads','ad-ca'].forEach(id=>document.getElementById(id).value='');
   toast('Campagne ajoutée');
@@ -2012,7 +2099,7 @@ function updateAd(idx){
   ads[idx]={nom:document.getElementById('ad-nom').value.trim(),
     type:document.getElementById('ad-type').value,
     budget:gv('ad-budget'),impressions:gv('ad-imp'),clics:gv('ad-clics'),
-    leads:gv('ad-leads'),ca:gv('ad-ca'),statut:document.getElementById('ad-statut').value};
+    leads:gv('ad-leads'),appRes:gv('ad-app-res'),appPres:gv('ad-app-pres'),appQual:gv('ad-app-qual'),ca:gv('ad-ca'),statut:document.getElementById('ad-statut').value};
   saveL();refreshAds();
   ['ad-nom','ad-budget','ad-imp','ad-clics','ad-leads','ad-ca'].forEach(id=>document.getElementById(id).value='');
   const btn=document.querySelector('#ads-meta .btn');
@@ -2050,6 +2137,9 @@ function renderCalls(){
   const topObj=Object.entries(objCounts).sort((a,b)=>b[1]-a[1])[0];
   s('v-appels',total);s('v-taux',pct(signes,total));s('v-ca',fE(totalCA));
   s('v-obj1',topObj?topObj[0]:'—');s('v-score',avgScore?(avgScore/10).toFixed(1)+'/10':'—');
+  const qualScores=calls.filter(c=>c.qualScore!=null&&c.qualScore>0).map(c=>c.qualScore);
+  const avgQual=qualScores.length>0?(qualScores.reduce((a,b)=>a+b,0)/qualScores.length):0;
+  s('v-qual',avgQual?avgQual.toFixed(1)+'/10':'—');
 
   const maxO=Math.max(...Object.values(objCounts),1);
   const objColors={Prix:'#EF4444','Pas le bon moment':'#F59E0B','Besoin de réfléchir':'#8B5CF6','Pas convaincu du résultat':'#4169E1',Conjoint:'#EC4899',Autre:'#A0A0C0'};
@@ -2070,6 +2160,7 @@ function renderCalls(){
           <div><div style="font-size:12px;font-weight:600">${c.nom}</div><div style="font-size:9px;color:var(--text3)">${c.date} · ${c.duree||'?'} min</div></div>
           <div style="margin-left:auto;display:flex;gap:5px;align-items:center">
             <span class="tag ${c.result==='Signé'?'t-gr':c.result==='Perdu'?'t-rd':'t-am'}">${c.result}</span>
+            ${c.qualScore!=null&&c.qualScore>0?'<span class="tag t-am" style="font-size:9px">Qual: '+c.qualScore+'/10</span>':''}
             ${c.montant?'<span style="font-family:var(--font-m);font-size:11px;color:var(--amber)">' +fE(c.montant)+'</span>':''}
           </div>
         </div>
@@ -2198,7 +2289,7 @@ async function addCall(){
   const call={nom,date:document.getElementById('call-date').value||today,
     duree:gv('call-duree'),result:document.getElementById('call-result').value,
     montant:gv('call-montant'),obj:document.getElementById('call-obj').value,
-    transcript,analysis:null,score:null};
+    transcript,analysis:null,score:null,qualScore:getCallQualScore()};
 
   if(transcript){
     if(!ANTHROPIC_KEY){
@@ -2254,7 +2345,7 @@ ${transcript.slice(0,4000)}`}]})});
     finally{btn.disabled=false;btn.textContent='Analyser par IA → Framework Boosmentor';}
   }
 
-  calls.push(call);saveL();renderCalls();
+  calls.push(call);saveL();renderCalls();resetQualCheckboxes();
   // Update lead in Airtable if linked
   if(rid&&call.result){
     const newStatut=call.result==='Signé'?'Signé':call.result==='Perdu'?'Perdu':'À relancer';
