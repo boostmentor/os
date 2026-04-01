@@ -646,6 +646,10 @@ tbody td:first-child{color:var(--text);font-weight:500}
       </div>
       <div class="kpi"><div class="kpi-l">Budget dépensé</div><div class="kpi-v rd" id="ads-budget">0€</div></div>
       <div class="kpi"><div class="kpi-l">ROAS</div><div class="kpi-v bl" id="ads-roas">0x</div><div class="kpi-d">objectif 3x+</div></div>
+      <div class="kpi"><div class="kpi-l">Appels réservés</div><div class="kpi-v" id="ads-appels-res">0</div><div class="kpi-d">leads → appel</div></div>
+      <div class="kpi"><div class="kpi-l">Appels présents</div><div class="kpi-v" id="ads-appels-pres">0</div><div class="kpi-d">appels tenus</div></div>
+      <div class="kpi"><div class="kpi-l">Coût/call rés.</div><div class="kpi-v" id="ads-cout-res">0€</div><div class="kpi-d">budget ÷ réservés</div></div>
+      <div class="kpi"><div class="kpi-l">Coût/call prés.</div><div class="kpi-v" id="ads-cout-pres">0€</div><div class="kpi-d">budget ÷ présents</div></div>
     </div>
 
     <div class="card">
@@ -1284,8 +1288,10 @@ function quickSat(idx,score){
 function refreshCEO(){
   const totalCosts=costs.reduce((s,c)=>s+c.amount,0);
   const totalCA=calls.filter(c=>c.result==='Signé').reduce((s,c)=>s+(c.montant||0),0);
-  const signes=leads.filter(l=>l.statut==='Signé').length;
-  const appels=leads.filter(l=>l.statut==='Appel réservé'||l.statut==='Signé'||l.statut==='Perdu').length||1;
+  const statsFrom=localStorage.getItem('bm_stats_from')||'';
+  const lf=statsFrom?leads.filter(l=>(l.createdTime||l.dateEntree||'')>=statsFrom):leads;
+  const signes=lf.filter(l=>l.statut==='Signé').length;
+  const appels=lf.filter(l=>l.statut==='Appel réservé'||l.statut==='Signé'||l.statut==='Perdu').length||1;
   s('ceo-c',fE(totalCA));
   s('ceo-col',fE(totalCA));
   s('ceo-cost',fE(totalCosts));
@@ -1293,10 +1299,10 @@ function refreshCEO(){
   s('ceo-taux',pct(signes,appels));
 
   // Funnel
-  const total=leads.length,max=Math.max(total,1);
-  const contact=leads.filter(l=>['Contacté','Qualifié','Appel réservé','Signé'].includes(l.statut)).length;
-  const qual=leads.filter(l=>['Qualifié','Appel réservé','Signé'].includes(l.statut)).length;
-  const appel=leads.filter(l=>['Appel réservé','Signé'].includes(l.statut)).length;
+  const total=lf.length,max=Math.max(total,1);
+  const contact=lf.filter(l=>['Contacté','Qualifié','Appel réservé','Signé'].includes(l.statut)).length;
+  const qual=lf.filter(l=>['Qualifié','Appel réservé','Signé'].includes(l.statut)).length;
+  const appel=lf.filter(l=>['Appel réservé','Signé'].includes(l.statut)).length;
   [['t',total,100],['c',contact,contact/max*100],['q',qual,qual/max*100],['a',appel,appel/max*100],['s',signes,signes/max*100]].forEach(([k,v,w])=>{
     s('fv-'+k,v);
     const b=document.getElementById('fn-'+k);if(b)b.style.width=w+'%';
@@ -1834,6 +1840,12 @@ function refreshAds(){
 
   s('ads-ctr',ctr+'%');s('ads-cpm',cpm+'€');s('ads-cpc',cpc+'€');s('ads-cpl',cpl+'€');
   s('ads-budget',fE(totalBudget));s('ads-roas',roas+'x');
+  const appelsRes=leads.filter(l=>['Appel réservé','Qualifié','Signé','Perdu'].includes(l.statut)).length;
+  const appelsPres=calls.length;
+  const coutCallRes=appelsRes>0?(totalBudget/appelsRes).toFixed(2):0;
+  const coutCallPres=appelsPres>0?(totalBudget/appelsPres).toFixed(2):0;
+  s('ads-appels-res',appelsRes);s('ads-appels-pres',appelsPres);
+  s('ads-cout-res',coutCallRes+'€');s('ads-cout-pres',coutCallPres+'€');
 
   const ctrEl=document.getElementById('ads-ctr-ind');
   if(ctrEl){ctrEl.className='kpi-indicator '+(ctr>=2?'good':ctr>=1?'warn':'bad');ctrEl.textContent=ctr>=2?'Excellent':ctr>=1?'Correct':'Mauvais';}
