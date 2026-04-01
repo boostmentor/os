@@ -1124,7 +1124,7 @@ async function loadLeads(){
       createdTime:r.createdTime||''
     };
   });
-  renderCRM(); renderCal(); populateProspectSelect(); return leads;
+  renderCRM(); renderCal(); populateProspectSelect(); refreshCEO(); return leads;
 }
 
 async function loadEOD(){
