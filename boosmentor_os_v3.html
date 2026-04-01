@@ -1147,6 +1147,7 @@ const PTitles={ceo:'DASHBOARD CEO',clients:'SUIVI CLIENTS',orga:'ACQUISITION · 
   ads:'PUBLICITÉS & ÉVÉNEMENTS',vente:'VENTE · APPELS & CLOSING',docs:'DOCUMENTATION'};
 
 function nav(p,el){
+  if(p!=='prospect'&&window.__editEODIdx!=null){window.__editEODIdx=null;window.__editEODId=null;const _b=document.getElementById('eod-btn');if(_b){_b.textContent='Valider → Airtable';_b.onclick=submitEOD;}}
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(x=>x.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
@@ -1313,10 +1314,11 @@ function refreshCEO(){
   const lf=statsFrom?leads.filter(l=>(l.createdTime||l.dateEntree||'')>=statsFrom):leads;
   const signes=lf.filter(l=>l.statut==='Signé').length;
   const appels=lf.filter(l=>l.statut==='Appel réservé'||l.statut==='Signé'||l.statut==='Perdu').length||1;
+  const totalCollected=ventes.reduce((s,v)=>s+(v.montant||0),0);
   s('ceo-c',fE(totalCA));
-  s('ceo-col',fE(totalCA));
+  s('ceo-col',fE(totalCollected));
   s('ceo-cost',fE(totalCosts));
-  s('ceo-marge',fE(totalCA-totalCosts));
+  s('ceo-marge',fE(totalCollected-totalCosts));
   s('ceo-taux',pct(signes,appels));
 
   // Funnel
@@ -1679,9 +1681,9 @@ function renderHisto(){
   const ct={Instagram:'<span class="tag t-ig">IG</span>',LinkedIn:'<span class="tag t-li">LI</span>',
     Publicité:'<span class="tag t-am">Pub</span>',Skool:'<span class="tag t-pu">Skool</span>',
     'iClosed potentiel':'<span class="tag t-bl">iClosed</span>'};
-  document.getElementById('h-table').innerHTML=eodHistory.length===0
+  document.getElementById('h-table').innerHTML=eodHistory.filter(r=>r.date&&r.date!=='').length===0
     ?'<tr><td colspan="11" class="empty">Aucun rapport</td></tr>'
-    :eodHistory.map((r,i)=>`<tr>
+    :eodHistory.filter(r=>r.date&&r.date!=='').map((r,i)=>`<tr>
       <td>${r.date}</td><td>${ct[r.canal]||r.canal}</td>
       <td style="color:var(--blue);font-weight:600">${r.msg}</td><td>${r.rel}</td>
       <td>${r.rep} <span style="font-size:9px;color:var(--text3)">${pct(r.rep,r.msg)}</span></td>
@@ -1949,9 +1951,9 @@ function refreshAds(){
 
   s('ads-ctr',ctr+'%');s('ads-cpm',cpm+'€');s('ads-cpc',cpc+'€');s('ads-cpl',cpl+'€');
   s('ads-budget',fE(totalBudget));s('ads-roas',roas+'x');
-    const appelsRes=parseInt(localStorage.getItem('bm_ads_appels_res')||'0');
-  const appelsPres=parseInt(localStorage.getItem('bm_ads_appels_pres')||'0');
-  const appelsQual=parseInt(localStorage.getItem('bm_ads_appels_qual')||'0');
+    const appelsRes=ads.reduce((s,a)=>s+(parseInt(a.appRes)||0),0);
+  const appelsPres=ads.reduce((s,a)=>s+(parseInt(a.appPres)||0),0);
+  const appelsQual=ads.reduce((s,a)=>s+(parseInt(a.appQual)||0),0);
   const coutCallRes=appelsRes>0?(totalBudget/appelsRes).toFixed(2):'0';
   const coutCallPres=appelsPres>0?(totalBudget/appelsPres).toFixed(2):'0';
   const coutCallQual=appelsQual>0?(totalBudget/appelsQual).toFixed(2):'0';
