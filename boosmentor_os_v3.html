@@ -465,7 +465,6 @@ tbody td:first-child{color:var(--text);font-weight:500}
       <tbody id="tt-table"><tr><td colspan="10" class="empty">Aucune vidéo TikTok</td></tr></tbody></table>
     </div>
   </div>
-  </div>
 </div>
 
 <!-- ═══ PROSPECTION ═══ -->
@@ -1106,9 +1105,7 @@ async function syncAll(){
 }
 
 async function loadLeads(){
-  const _sf=localStorage.getItem('bm_stats_from')||'';
-  const _fq=_sf?'&filterByFormula=IS_AFTER(CREATED_TIME(),"'+_sf+'")':'';
-  const recs=await aAll(TL,_fq);
+  const recs=await aAll(TL);
   leads=recs.map(r=>{
     const f=r.fields;
     const g=(id,name)=>{
