@@ -2482,12 +2482,19 @@ function openMetricsModal(canal){
   const sub=canal==='youtube'?(document.getElementById('ytb-kpi-canal')?.value||'valeur'):'';
   __metricsSubCanal=sub;
   const labels={youtube:'YouTube',instagram:'Instagram',linkedin:'LinkedIn',tiktok:'TikTok'};
-  const subLabels={valeur:'Valeur',podcast:'Podcast',raw:'Raw',temoignages:'Témoignages'};
-  document.getElementById('m-metrics-title').textContent='Métriques '+(labels[canal]||canal)+(sub?' — '+subLabels[sub]:'');
+  document.getElementById('m-metrics-title').textContent='Métriques '+(labels[canal]||canal);
   const m=sub?((metrics[canal]||{})[sub]||{}):(metrics[canal]||{});
   const fields=METRICS_FIELDS[canal]||[];
-  document.getElementById('m-metrics-fields').innerHTML=fields.map(f=>'<div class="fi"><div class="fl">'+f.label+'</div><input type="'+f.type+'" id="mf-'+f.key+'" value="'+(m[f.key]||0)+'" placeholder="0" style="width:100%"></div>').join('');
+  const chanSel=canal==='youtube'?'<div class="fi" style="margin-bottom:12px"><div class="fl" style="margin-bottom:4px">Chaîne YouTube</div><select id="m-ytb-canal" onchange="switchYTBModalChannel(this.value)" style="width:100%;background:var(--s2);color:var(--text);border:1px solid var(--brd);border-radius:6px;padding:8px;font-size:13px"><option value="valeur"'+(sub==='valeur'?' selected':'')+'>Valeur</option><option value="podcast"'+(sub==='podcast'?' selected':'')+'>Podcast</option><option value="raw"'+(sub==='raw'?' selected':'')+'>Raw</option><option value="temoignages"'+(sub==='temoignages'?' selected':'')+'>Témoignages</option></select></div>':'';
+  document.getElementById('m-metrics-fields').innerHTML=chanSel+fields.map(f=>'<div class="fi"><div class="fl">'+f.label+'</div><input type="'+f.type+'" id="mf-'+f.key+'" value="'+(m[f.key]||0)+'" placeholder="0" style="width:100%"></div>').join('');
   openM('m-metrics');
+}
+function switchYTBModalChannel(val){
+  __metricsSubCanal=val;
+  const extSel=document.getElementById('ytb-kpi-canal');if(extSel)extSel.value=val;
+  const m=(metrics['youtube']||{})[val]||{};
+  const fields=METRICS_FIELDS['youtube']||[];
+  fields.forEach(f=>{const el=document.getElementById('mf-'+f.key);if(el)el.value=(m[f.key]||0);});
 }
 function saveMetrics(){
   const fields=METRICS_FIELDS[__metricsCanal]||[];
