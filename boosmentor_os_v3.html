@@ -823,7 +823,8 @@ tbody td:first-child{color:var(--text);font-weight:500}
       <button onclick="closeVenteModal()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:22px;line-height:1">&times;</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-      <div class="fi" style="grid-column:1/-1"><div class="fl">Client / Prospect</div><select id="vte-prospect" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px"><option value="">— Sélectionner un prospect</option></select></div>
+      <div class="fi" style="grid-column:1/-1"><div class="fl">Client / Prospect</div><select id="vte-prospect" onchange="onVenteProspectChange()" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px"><option value="">— Sélectionner un prospect</option></select></div>
+      <div class="fi"><div class="fl">Canal d’acquisition</div><div id="vte-canal-display" style="padding:8px 10px;border-radius:6px;border:1px solid var(--border);background:var(--s1);color:var(--text2);font-size:14px;min-height:36px;display:flex;align-items:center">—</div></div>
       <div class="fi"><div class="fl">Contracté (€)</div><input id="vte-montant-c" type="number" placeholder="0"></div>
       <div class="fi"><div class="fl">Collecté (€)</div><input id="vte-montant-col" type="number" placeholder="0"></div>
       <div class="fi" style="grid-column:1/-1"><div class="fl">Date de signature</div><input id="vte-date" type="date"></div>
@@ -2107,11 +2108,29 @@ function populateVenteSelect() {
       return '<option value="'+l.id+'">'+(date?'['+date+'] ':'')+l.nom+(l.tel?' — '+l.tel:'')+(l.canal?' · '+l.canal:'')+'<\/option>';
     }).join('');
 }
+function onVenteProspectChange(){
+  const sel = document.getElementById('vte-prospect');
+  const rid = sel ? sel.value : '';
+  const lead = rid ? (leads||[]).find(l => l.id === rid) : null;
+  const display = document.getElementById('vte-canal-display');
+  if (!display) return;
+  if (lead && lead.canal) {
+    display.textContent = lead.canal;
+    display.style.color = 'var(--text)';
+    display.style.fontWeight = '600';
+  } else {
+    display.textContent = '—';
+    display.style.color = 'var(--text2)';
+    display.style.fontWeight = 'normal';
+  }
+}
 function openVenteModal() {
   document.getElementById('modal-vente').style.display = 'flex';
   const d = new Date().toISOString().split('T')[0];
   document.getElementById('vte-date').value = d;
   populateVenteSelect();
+  const cd = document.getElementById('vte-canal-display');
+  if (cd) { cd.textContent = '—'; cd.style.color = 'var(--text2)'; cd.style.fontWeight = 'normal'; }
 }
 function closeVenteModal() {
   document.getElementById('modal-vente').style.display = 'none';
