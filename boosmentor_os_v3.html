@@ -653,6 +653,8 @@ tbody td:first-child{color:var(--text);font-weight:500}
       <div class="kpi"><div class="kpi-l">Coût/call rés.</div><div class="kpi-v" id="ads-cout-res">0€</div><div class="kpi-d">budget ÷ réservés</div></div>
       <div class="kpi"><div class="kpi-l">Coût/call prés.</div><div class="kpi-v" id="ads-cout-pres">0€</div><div class="kpi-d">budget ÷ présents</div></div>
       <div class="kpi"><div class="kpi-l">Coût/call qual.</div><div class="kpi-v" id="ads-cout-qual">0€</div><div class="kpi-d">budget ÷ qualifiés</div></div>
+      <div class="kpi"><div class="kpi-l">Calls pitchés</div><div class="kpi-v" id="ads-appels-pitch">0</div><div class="kpi-d">offre présentée</div></div>
+      <div class="kpi"><div class="kpi-l">Ventes</div><div class="kpi-v" id="ads-ventes">0</div><div class="kpi-d">deals signés</div></div>
     </div>
 
     
@@ -669,6 +671,8 @@ tbody td:first-child{color:var(--text);font-weight:500}
           <div class="fi"><div class="fl">Appels réservés</div><input type="number" id="ad-app-res" placeholder="0"></div>
           <div class="fi"><div class="fl">Appels présents</div><input type="number" id="ad-app-pres" placeholder="0"></div>
           <div class="fi"><div class="fl">Appels qualifiés</div><input type="number" id="ad-app-qual" placeholder="0"></div>
+          <div class="fi"><div class="fl">Calls pitchés</div><input type="number" id="ad-app-pitch" placeholder="0"></div>
+          <div class="fi"><div class="fl">Ventes</div><input type="number" id="ad-app-vente" placeholder="0"></div>
           <div class="fi"><div class="fl">CA tracé (€)</div><input type="number" id="ad-ca" placeholder="0"></div>
           <div class="fi"><div class="fl">Statut</div><select id="ad-statut"><option>Active</option><option>En test</option><option>Pausée</option><option>Arrêtée</option></select></div>
         </div>
@@ -1962,7 +1966,9 @@ function refreshAds(){
   const coutCallRes=appelsRes>0?(totalBudget/appelsRes).toFixed(2):'0';
   const coutCallPres=appelsPres>0?(totalBudget/appelsPres).toFixed(2):'0';
   const coutCallQual=appelsQual>0?(totalBudget/appelsQual).toFixed(2):'0';
-  s('ads-appels-res',appelsRes);s('ads-appels-pres',appelsPres);s('ads-appels-qual',appelsQual);
+  const appelsPitch=ads.reduce((s,a)=>s+(parseInt(a.appPitch)||0),0);
+  const appelsVente=ads.reduce((s,a)=>s+(parseInt(a.appVente)||0),0);
+  s('ads-appels-res',appelsRes);s('ads-appels-pres',appelsPres);s('ads-appels-qual',appelsQual);s('ads-appels-pitch',appelsPitch);s('ads-ventes',appelsVente);
   s('ads-cout-res',coutCallRes+'€');s('ads-cout-pres',coutCallPres+'€');s('ads-cout-qual',coutCallQual+'€');
   loadAdsCallStats();
 
@@ -2012,7 +2018,7 @@ function addAd(){
   if(!nom){toast('Nom requis',true);return;}
   ads.push({nom,type:document.getElementById('ad-type').value,
     budget:gv('ad-budget'),impressions:gv('ad-imp'),clics:gv('ad-clics'),
-    leads:gv('ad-leads'),appRes:gv('ad-app-res'),appPres:gv('ad-app-pres'),appQual:gv('ad-app-qual'),ca:gv('ad-ca'),statut:document.getElementById('ad-statut').value});
+    leads:gv('ad-leads'),appRes:gv('ad-app-res'),appPres:gv('ad-app-pres'),appQual:gv('ad-app-qual'),appPitch:gv('ad-app-pitch'),appVente:gv('ad-app-vente'),ca:gv('ad-ca'),statut:document.getElementById('ad-statut').value});
   saveL();refreshAds();
   ['ad-nom','ad-budget','ad-imp','ad-clics','ad-leads','ad-ca'].forEach(id=>document.getElementById(id).value='');
   toast('Campagne ajoutée');
@@ -2089,6 +2095,8 @@ function editAd(idx){
   document.getElementById('ad-clics').value=a.clics||0;
   document.getElementById('ad-leads').value=a.leads||0;
   document.getElementById('ad-ca').value=a.ca||0;
+  document.getElementById('ad-app-pitch').value=a.appPitch||0;
+  document.getElementById('ad-app-vente').value=a.appVente||0;
   document.getElementById('ad-statut').value=a.statut;
   const btn=document.querySelector('#ads-meta .btn[onclick="addAd()"]');
   if(btn){btn.textContent='Mettre à jour';btn.onclick=()=>updateAd(idx);}
@@ -2098,7 +2106,7 @@ function updateAd(idx){
   ads[idx]={nom:document.getElementById('ad-nom').value.trim(),
     type:document.getElementById('ad-type').value,
     budget:gv('ad-budget'),impressions:gv('ad-imp'),clics:gv('ad-clics'),
-    leads:gv('ad-leads'),appRes:gv('ad-app-res'),appPres:gv('ad-app-pres'),appQual:gv('ad-app-qual'),ca:gv('ad-ca'),statut:document.getElementById('ad-statut').value};
+    leads:gv('ad-leads'),appRes:gv('ad-app-res'),appPres:gv('ad-app-pres'),appQual:gv('ad-app-qual'),appPitch:gv('ad-app-pitch'),appVente:gv('ad-app-vente'),ca:gv('ad-ca'),statut:document.getElementById('ad-statut').value};
   saveL();refreshAds();
   ['ad-nom','ad-budget','ad-imp','ad-clics','ad-leads','ad-ca'].forEach(id=>document.getElementById(id).value='');
   const btn=document.querySelector('#ads-meta .btn');
