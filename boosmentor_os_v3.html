@@ -648,10 +648,21 @@ tbody td:first-child{color:var(--text);font-weight:500}
       <div class="kpi"><div class="kpi-l">ROAS</div><div class="kpi-v bl" id="ads-roas">0x</div><div class="kpi-d">objectif 3x+</div></div>
       <div class="kpi"><div class="kpi-l">Appels réservés</div><div class="kpi-v" id="ads-appels-res">0</div><div class="kpi-d">leads → appel</div></div>
       <div class="kpi"><div class="kpi-l">Appels présents</div><div class="kpi-v" id="ads-appels-pres">0</div><div class="kpi-d">appels tenus</div></div>
+      <div class="kpi"><div class="kpi-l">Appels qualifiés</div><div class="kpi-v" id="ads-appels-qual">0</div><div class="kpi-d">présents qualifiés</div></div>
       <div class="kpi"><div class="kpi-l">Coût/call rés.</div><div class="kpi-v" id="ads-cout-res">0€</div><div class="kpi-d">budget ÷ réservés</div></div>
       <div class="kpi"><div class="kpi-l">Coût/call prés.</div><div class="kpi-v" id="ads-cout-pres">0€</div><div class="kpi-d">budget ÷ présents</div></div>
+      <div class="kpi"><div class="kpi-l">Coût/call qual.</div><div class="kpi-v" id="ads-cout-qual">0€</div><div class="kpi-d">budget ÷ qualifiés</div></div>
     </div>
 
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-h"><span class="card-t">Saisie appels (Meta Ads)</span></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px">
+        <div class="fi"><div class="fl">Appels réservés</div><input id="ads-inp-res" type="number" min="0" value="0" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px"></div>
+        <div class="fi"><div class="fl">Appels présents</div><input id="ads-inp-pres" type="number" min="0" value="0" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px"></div>
+        <div class="fi"><div class="fl">Appels qualifiés</div><input id="ads-inp-qual" type="number" min="0" value="0" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px"></div>
+      </div>
+      <div style="padding:0 16px 16px"><button onclick="saveAdsCallStats()" style="width:100%;padding:10px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">Enregistrer</button></div>
+    </div>
     <div class="card">
       <div class="card-h"><span class="card-t">Ajouter une campagne</span></div>
       <div class="card-b">
@@ -1826,6 +1837,23 @@ function switchAds(tab,el){
 function indClass(v,good,ok){return v<=good?'good':v<=ok?'warn':'bad';}
 function indLabel(v,good,ok,goodL,okL,badL){return v<=good?goodL:v<=ok?okL:badL;}
 
+function saveAdsCallStats(){
+  const res=parseInt(document.getElementById('ads-inp-res').value||'0');
+  const pres=parseInt(document.getElementById('ads-inp-pres').value||'0');
+  const qual=parseInt(document.getElementById('ads-inp-qual').value||'0');
+  localStorage.setItem('bm_ads_appels_res',res);
+  localStorage.setItem('bm_ads_appels_pres',pres);
+  localStorage.setItem('bm_ads_appels_qual',qual);
+  refreshAds();
+}
+function loadAdsCallStats(){
+  const inp=document.getElementById('ads-inp-res');
+  if(inp){
+    inp.value=localStorage.getItem('bm_ads_appels_res')||'0';
+    document.getElementById('ads-inp-pres').value=localStorage.getItem('bm_ads_appels_pres')||'0';
+    document.getElementById('ads-inp-qual').value=localStorage.getItem('bm_ads_appels_qual')||'0';
+  }
+}
 function refreshAds(){
   const totalBudget=ads.reduce((s,a)=>s+a.budget,0);
   const totalLeads=ads.reduce((s,a)=>s+a.leads,0);
@@ -1840,12 +1868,15 @@ function refreshAds(){
 
   s('ads-ctr',ctr+'%');s('ads-cpm',cpm+'€');s('ads-cpc',cpc+'€');s('ads-cpl',cpl+'€');
   s('ads-budget',fE(totalBudget));s('ads-roas',roas+'x');
-  const appelsRes=leads.filter(l=>['Appel réservé','Qualifié','Signé','Perdu'].includes(l.statut)).length;
-  const appelsPres=calls.length;
-  const coutCallRes=appelsRes>0?(totalBudget/appelsRes).toFixed(2):0;
-  const coutCallPres=appelsPres>0?(totalBudget/appelsPres).toFixed(2):0;
-  s('ads-appels-res',appelsRes);s('ads-appels-pres',appelsPres);
-  s('ads-cout-res',coutCallRes+'€');s('ads-cout-pres',coutCallPres+'€');
+    const appelsRes=parseInt(localStorage.getItem('bm_ads_appels_res')||'0');
+  const appelsPres=parseInt(localStorage.getItem('bm_ads_appels_pres')||'0');
+  const appelsQual=parseInt(localStorage.getItem('bm_ads_appels_qual')||'0');
+  const coutCallRes=appelsRes>0?(totalBudget/appelsRes).toFixed(2):'0';
+  const coutCallPres=appelsPres>0?(totalBudget/appelsPres).toFixed(2):'0';
+  const coutCallQual=appelsQual>0?(totalBudget/appelsQual).toFixed(2):'0';
+  s('ads-appels-res',appelsRes);s('ads-appels-pres',appelsPres);s('ads-appels-qual',appelsQual);
+  s('ads-cout-res',coutCallRes+'€');s('ads-cout-pres',coutCallPres+'€');s('ads-cout-qual',coutCallQual+'€');
+  loadAdsCallStats();
 
   const ctrEl=document.getElementById('ads-ctr-ind');
   if(ctrEl){ctrEl.className='kpi-indicator '+(ctr>=2?'good':ctr>=1?'warn':'bad');ctrEl.textContent=ctr>=2?'Excellent':ctr>=1?'Correct':'Mauvais';}
