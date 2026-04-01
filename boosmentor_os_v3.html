@@ -2104,6 +2104,10 @@ function deleteAd(idx){
   if(!confirm('Supprimer cette campagne ?'))return;
   ads.splice(idx,1);saveL();refreshAds();toast('Supprimée');
 }
+function deleteCall(idx){
+  if(!confirm('Supprimer cet appel ?'))return;
+  calls.splice(idx,1);localStorage.setItem('bm_calls',JSON.stringify(calls));renderCalls();toast('Supprimé');
+}
 
 // ═══ VENTE ════════════════════════════════════════════════════
 function populateProspectSelect(){
@@ -2156,6 +2160,7 @@ function renderCalls(){
             <span class="tag ${c.result==='Signé'?'t-gr':c.result==='Perdu'?'t-rd':'t-am'}">${c.result}</span>
             ${c.qualScore!=null&&c.qualScore>0?'<span class="tag t-am" style="font-size:9px">Qual: '+c.qualScore+'/10</span>':''}
             ${c.montant?'<span style="font-family:var(--font-m);font-size:11px;color:var(--amber)">' +fE(c.montant)+'</span>':''}
+          <button onclick="event.stopPropagation();deleteCall(${calls.length-1-i})" style="background:none;border:none;color:rgba(255,255,255,.25);cursor:pointer;font-size:18px;padding:0 6px;line-height:1;margin-left:4px" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='rgba(255,255,255,.25)'" title="Supprimer">×</button>
           </div>
         </div>
         ${c.obj?'<div style="font-size:10px;color:var(--text3)">Objection : '+c.obj+'</div>':''}
