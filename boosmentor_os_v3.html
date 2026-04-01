@@ -2018,7 +2018,7 @@ function renderCalls(){
   const listEl=document.getElementById('calls-list');
   listEl.innerHTML=calls.length===0?''
     :calls.slice().reverse().map((c,i)=>{
-      const sc=c.score||0;
+      const sc=c.score?+(c.score/10).toFixed(1):0;
       const scColor=sc>=7?'var(--green)':sc>=5?'var(--amber)':'var(--red)';
       return `<div class="call-card" onclick="toggleDetail(${calls.length-1-i})">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
