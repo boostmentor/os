@@ -655,15 +655,7 @@ tbody td:first-child{color:var(--text);font-weight:500}
       <div class="kpi"><div class="kpi-l">Coût/call qual.</div><div class="kpi-v" id="ads-cout-qual">0€</div><div class="kpi-d">budget ÷ qualifiés</div></div>
     </div>
 
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-h"><span class="card-t">Saisie appels (Meta Ads)</span></div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px">
-        <div class="fi"><div class="fl">Appels réservés</div><input id="ads-inp-res" type="number" min="0" value="0" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px"></div>
-        <div class="fi"><div class="fl">Appels présents</div><input id="ads-inp-pres" type="number" min="0" value="0" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px"></div>
-        <div class="fi"><div class="fl">Appels qualifiés</div><input id="ads-inp-qual" type="number" min="0" value="0" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px"></div>
-      </div>
-      <div style="padding:0 16px 16px"><button onclick="saveAdsCallStats()" style="width:100%;padding:10px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">Enregistrer</button></div>
-    </div>
+    
     <div class="card">
       <div class="card-h"><span class="card-t">Ajouter une campagne</span></div>
       <div class="card-b">
@@ -825,8 +817,6 @@ tbody td:first-child{color:var(--text);font-weight:500}
   <!-- Calls list -->
   <div id="calls-list"></div>
 </div>
-
-
 
 <div id="ventes-wrap" style="margin-top:28px;padding:0 0 20px 0">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
@@ -1177,7 +1167,6 @@ function onPeriodChange(){
   cd.style.display=v==='custom'?'flex':'none';
 }
 
-
 // ═══ CLIENTS ══════════════════════════════════════════════════
 let clients = JSON.parse(localStorage.getItem('bm_clients')||'[]');
 
@@ -1477,7 +1466,6 @@ function renderLI(){
     </tr>`).join('');
 }
 
-
 function renderTikTok(){
   const vids=videos.filter(v=>v.canal==='tiktok');
   const m=metrics['tiktok']||{};
@@ -1766,7 +1754,6 @@ function switchProspect(tab,el){
   if(tab==='crm')renderCRM();
   if(tab==='cal')renderCal();
 }
-
 
 // ═══ CRM SORT ═════════════════════════════════════════════════
 let crmSortField = '';
@@ -2085,7 +2072,6 @@ function togglePubPlan(){
   const p=document.getElementById('pub-plan');
   p.style.display=p.style.display==='none'?'block':'none';
 }
-
 
 function editAd(idx){
   const a=ads[idx];if(!a)return;
