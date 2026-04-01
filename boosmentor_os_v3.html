@@ -1418,7 +1418,7 @@ function renderYTB(){
       <td style="color:${v.ctr>=4?'var(--green)':v.ctr>=2?'var(--amber)':v.ctr>0?'var(--red)':'var(--text3)'};font-family:var(--font-m)">${v.ctr!=null&&v.ctr>0?v.ctr+'%':'—'}</td>
       <td>${cpB(v,'j2')}</td><td>${cpB(v,'j5')}</td><td>${cpB(v,'j7')}</td>
       <td style="font-size:10px;color:var(--text3)">${v.temps?v.temps+'h':'—'}</td>
-      <td><button class="btn-out" onclick="editContent(${videos.indexOf(v)})" style="padding:2px 7px;font-size:9px">✎</button></td>
+      <td><button class="btn-out" onclick="editContent(${videos.indexOf(v)})" style="padding:2px 7px;font-size:9px">✎</button><button onclick="deleteContent(${videos.indexOf(v)})" style="background:none;border:none;color:rgba(255,255,255,.25);cursor:pointer;font-size:15px;padding:0 4px;line-height:1" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='rgba(255,255,255,.25)'" title="Supprimer">×</button></td>
     </tr>`).join('');
 
   const top5=videos.filter(v=>v.canal.startsWith('ytb')&&v.vues>0).sort((a,b)=>b.cpv-a.cpv).slice(0,5);
@@ -1446,7 +1446,7 @@ function renderIG(){
       <td style="color:${v.ctr>=4?'var(--green)':v.ctr>=2?'var(--amber)':v.ctr>0?'var(--red)':'var(--text3)'};font-family:var(--font-m)">${v.ctr!=null&&v.ctr>0?v.ctr+'%':'—'}</td>
       <td>${cpB(v,'j2')}</td><td>${cpB(v,'j5')}</td><td>${cpB(v,'j7')}</td>
       <td style="font-size:10px;color:var(--text3)">${v.temps?v.temps+'h':'—'}</td>
-      <td><button class="btn-out" onclick="editContent(${videos.indexOf(v)})" style="padding:2px 7px;font-size:9px">✎</button></td>
+      <td><button class="btn-out" onclick="editContent(${videos.indexOf(v)})" style="padding:2px 7px;font-size:9px">✎</button><button onclick="deleteContent(${videos.indexOf(v)})" style="background:none;border:none;color:rgba(255,255,255,.25);cursor:pointer;font-size:15px;padding:0 4px;line-height:1" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='rgba(255,255,255,.25)'" title="Supprimer">×</button></td>
     </tr>`).join('');
 }
 
@@ -1464,7 +1464,7 @@ function renderLI(){
       <td>${fmt(v.vues)}</td><td>${v.inter}</td><td>${fE(v.ca)}</td>
       <td>${v.source?'<span class="tag t-gr">Oui</span>':'—'}</td>
       <td style="font-size:10px;color:var(--text3)">${v.temps?v.temps+'h':'—'}</td>
-      <td><button class="btn-out" onclick="editContent(${videos.indexOf(v)})" style="padding:2px 7px;font-size:9px">✎</button></td>
+      <td><button class="btn-out" onclick="editContent(${videos.indexOf(v)})" style="padding:2px 7px;font-size:9px">✎</button><button onclick="deleteContent(${videos.indexOf(v)})" style="background:none;border:none;color:rgba(255,255,255,.25);cursor:pointer;font-size:15px;padding:0 4px;line-height:1" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='rgba(255,255,255,.25)'" title="Supprimer">×</button></td>
     </tr>`).join('');
 }
 
@@ -1490,7 +1490,7 @@ function renderTikTok(){
       <td style="color:${v.ctr>=4?'var(--green)':v.ctr>=2?'var(--amber)':v.ctr>0?'var(--red)':'var(--text3)'};font-family:var(--font-m)">${v.ctr!=null&&v.ctr>0?v.ctr+'%':'—'}</td>
       <td>${cpB(v,'j2')}</td><td>${cpB(v,'j5')}</td><td>${cpB(v,'j7')}</td>
       <td style="font-size:10px;color:var(--text3)">${v.temps?v.temps+'h':'—'}</td>
-      <td><button class="btn-out" onclick="editContent(${videos.indexOf(v)})" style="padding:2px 7px;font-size:9px">✎</button></td>
+      <td><button class="btn-out" onclick="editContent(${videos.indexOf(v)})" style="padding:2px 7px;font-size:9px">✎</button><button onclick="deleteContent(${videos.indexOf(v)})" style="background:none;border:none;color:rgba(255,255,255,.25);cursor:pointer;font-size:15px;padding:0 4px;line-height:1" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='rgba(255,255,255,.25)'" title="Supprimer">×</button></td>
     </tr>`).join('');
   // TikTok chart
   const ctx=document.getElementById('chart-tiktok');
@@ -1606,6 +1606,11 @@ function editContent(idx){
     document.querySelector('#m-content .btn').onclick=addContent;
   };
   openM('m-content');
+}
+
+function deleteContent(idx){
+  if(!confirm('Supprimer cette vidéo ?'))return;
+  videos.splice(idx,1);saveL('bm_v',videos);refreshOrga();renderCharts();toast('Supprimé');
 }
 
 // ═══ EOD ══════════════════════════════════════════════════════
