@@ -365,6 +365,7 @@ tbody td:first-child{color:var(--text);font-weight:500}
       <div class="card-b"><div class="kpi-g" style="grid-template-columns:1fr 1fr">
         <div class="kpi"><div class="kpi-l">Abonnés</div><div class="kpi-v bl" id="ytb-ab">0</div></div>
         <div class="kpi"><div class="kpi-l">Impressions</div><div class="kpi-v" id="ytb-imp">0</div></div>
+        <div class="kpi"><div class="kpi-l">CTR moyen</div><div class="kpi-v am" id="ytb-ctr">0%</div></div>
       </div></div>
     </div>
     <div class="card">
@@ -427,9 +428,9 @@ tbody td:first-child{color:var(--text);font-weight:500}
         <div class="card-b">
           <div class="kpi-g" style="grid-template-columns:1fr 1fr;margin-bottom:0">
             <div class="kpi"><div class="kpi-l">Abonnés</div><div class="kpi-v bl" id="li-ab">0</div></div>
-            <div class="kpi"><div class="kpi-l">Impressions</div><div class="kpi-v" id="li-im">0</div></div>
-            <div class="kpi"><div class="kpi-l">CA tracé</div><div class="kpi-v gr" id="li-ca">0€</div></div>
-            <div class="kpi"><div class="kpi-l">Appels générés</div><div class="kpi-v" id="li-ap">0</div></div>
+            <div class="kpi"><div class="kpi-l">Vues profil</div><div class="kpi-v" id="li-pv">0</div></div>
+            <div class="kpi"><div class="kpi-l">Clics bouton</div><div class="kpi-v" id="li-btn">0</div></div>
+            <div class="kpi"><div class="kpi-l">Impressions bouton</div><div class="kpi-v" id="li-impbtn">0</div></div>
           </div>
         </div>
       </div>
@@ -452,11 +453,7 @@ tbody td:first-child{color:var(--text);font-weight:500}
         <div class="card-b">
           <div class="kpi-g" style="grid-template-columns:1fr 1fr;margin-bottom:0">
             <div class="kpi"><div class="kpi-l">Abonnés</div><div class="kpi-v bl" id="tt-ab">0</div></div>
-            <div class="kpi"><div class="kpi-l">Vues totales</div><div class="kpi-v" id="tt-vues">0</div></div>
-            <div class="kpi"><div class="kpi-l">CA tracé</div><div class="kpi-v gr" id="tt-ca">0€</div></div>
-            <div class="kpi"><div class="kpi-l">CPV moyen</div><div class="kpi-v am" id="tt-cpv">0€</div></div>
-            <div class="kpi"><div class="kpi-l">Interactions moy.</div><div class="kpi-v" id="tt-inter">0</div></div>
-            <div class="kpi"><div class="kpi-l">Appels générés</div><div class="kpi-v" id="tt-ap">0</div></div>
+            <div class="kpi"><div class="kpi-l">Clics lien bio</div><div class="kpi-v" id="tt-clics">0</div></div>
           </div>
         </div>
       </div>
@@ -1108,7 +1105,9 @@ async function syncAll(){
 }
 
 async function loadLeads(){
-  const recs=await aAll(TL);
+  const _sf=localStorage.getItem('bm_stats_from')||'';
+  const _fq=_sf?'&filterByFormula=IS_AFTER(CREATED_TIME(),"'+_sf+'")':'';
+  const recs=await aAll(TL,_fq);
   leads=recs.map(r=>{
     const f=r.fields;
     const g=(id,name)=>{
@@ -1424,6 +1423,7 @@ function renderYTB(){
   const my=metrics['youtube']||{};
   const ytbAbEl=document.getElementById('ytb-ab');if(ytbAbEl)ytbAbEl.textContent=fmt(my.abonnes||0);
   const ytbImpEl=document.getElementById('ytb-imp');if(ytbImpEl)ytbImpEl.textContent=fmt(my.impressions||0);
+  const ytbCtrEl=document.getElementById('ytb-ctr');if(ytbCtrEl)ytbCtrEl.textContent=(my.ctr||0)+'%';
   const vids=videos.filter(v=>v.canal&&v.canal.startsWith('ytb')&&(filter===''||v.canal===filter));
   const tbl=document.getElementById('ytb-table');
   tbl.innerHTML=vids.length===0?'<tr><td colspan="11" class="empty">Aucune vidéo</td></tr>'
@@ -1471,10 +1471,7 @@ function renderIG(){
 function renderLI(){
   const vids=videos.filter(v=>v.canal==='linkedin');
   const m=metrics['linkedin']||{};
-  s('li-ab',fmt(m.abonnes||0));
-  s('li-im',fmt(vids.reduce((s,v)=>s+v.vues,0)));
-  s('li-ca',fE(vids.reduce((s,v)=>s+v.ca,0)));
-  s('li-ap',m.appels||0);
+  s('li-ab',fmt(m.abonnes||0));s('li-pv',fmt(m.vuesProfil||0));s('li-btn',fmt(m.clicsBtn||0));s('li-impbtn',fmt(m.impBtn||0));
   const tbl=document.getElementById('li-table');
   tbl.innerHTML=vids.length===0?'<tr><td colspan="7" class="empty">Aucun post</td></tr>'
     :vids.map(v=>`<tr>
@@ -1493,7 +1490,7 @@ function renderTikTok(){
   const totalVues=vids.reduce((s,v)=>s+v.vues,0);
   const avgCPV=totalVues>0?(totalCA/totalVues).toFixed(2):0;
   const avgInter=vids.length>0?(vids.reduce((s,v)=>s+v.inter,0)/vids.length).toFixed(0):0;
-  s('tt-ab',fmt(m.abonnes||0));
+  s('tt-ab',fmt(m.abonnes||0));s('tt-clics',fmt(m.clicsLienBio||0));
   s('tt-vues',fmt(totalVues));
   s('tt-ca',fE(totalCA));
   s('tt-cpv',avgCPV+'€');
@@ -2479,7 +2476,7 @@ refreshAds();refreshConfs();
   renderDocs();refreshCEO();renderClients();loadApiKey();
 })();
 
-const METRICS_FIELDS={youtube:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'impressions',label:'Impressions totales',type:'number'}],instagram:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'newAud',label:'Nouvelle audience (%)',type:'number'}],linkedin:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'appels',label:'Appels générés',type:'number'}],tiktok:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'appels',label:'Appels générés',type:'number'}]};
+const METRICS_FIELDS={youtube:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'impressions',label:'Impressions totales',type:'number'},{key:'ctr',label:'CTR moyen (%)',type:'number'}],instagram:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'newAud',label:'Nouvelle audience (%)',type:'number'}],linkedin:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'vuesProfil',label:'Vues du profil',type:'number'},{key:'clicsBtn',label:'Clics bouton personnalisé',type:'number'},{key:'impBtn',label:'Impressions bouton',type:'number'}],tiktok:[{key:'abonnes',label:'Abonnés',type:'number'},{key:'clicsLienBio',label:'Clics lien bio',type:'number'}]};
 let __metricsCanal='';
 function openMetricsModal(canal){
   __metricsCanal=canal;
