@@ -341,14 +341,6 @@ tbody td:first-child{color:var(--text);font-weight:500}
     </div>
   </div>
 
-  <div style="margin:16px 0">
-    <div class="card" id="card-cash-split" style="width:100%">
-      <div class="card-h"><span class="card-t">CA · Nouveau cash vs Ancien cash collecté</span></div>
-      <div class="card-b" style="position:relative;height:260px;padding:12px">
-        <canvas id="chart-cash-split"></canvas>
-      </div>
-    </div>
-  </div>
   <div class="stabs">
     <div class="stab active" onclick="switchOrga('ytb',this)">YouTube</div>
     <div class="stab" onclick="switchOrga('ig',this)">Instagram</div>
@@ -2524,88 +2516,5 @@ function saveMetrics(){
     <div style="margin-top:16px;text-align:right"><button class="btn" onclick="saveMetrics()">Enregistrer</button></div>
   </div>
 </div>
-
-<script id="cash-chart-init">
-(function() {
-  function run() {
-    try {
-      var token = (typeof AT !== 'undefined') ? AT : '';
-      if (!token) { console.warn('[CashChart] AT token not found'); return; }
-      var base = 'https://api.airtable.com/v0/appcoXmZ3k9S1pcso';
-      var hdrs = { 'Authorization': 'Bearer ' + token };
-      function fetchAT(url) {
-        return fetch(url, { headers: hdrs }).then(function(r){ return r.json(); });
-      }
-      function toLabel(dateStr) {
-        if (!dateStr) return null;
-        var d = new Date(dateStr);
-        return d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
-      }
-      function last6() {
-        var now = new Date(); var out = [];
-        for (var i = 5; i >= 0; i--) {
-          var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-          out.push(d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }));
-        }
-        return out;
-      }
-      var labels = last6();
-      var nouv = {}; var anc = {};
-      labels.forEach(function(l){ nouv[l]=0; anc[l]=0; });
-      var urlV = base + '/tbl0HBKnvQ7saJgaO?fields%5B%5D=fldURctTu4Y4if2ou&fields%5B%5D=fldbDVcdBi2Za1vrv';
-      var urlP = base + '/tbl9PU0xWv9NznB6h?fields%5B%5D=fldcd36vhzEaQCkFI&fields%5B%5D=fldOdndgzDpIg3fa7';
-      Promise.all([fetchAT(urlV), fetchAT(urlP)]).then(function(res) {
-        (res[0].records||[]).forEach(function(r) {
-          var lbl = toLabel(r.fields['fldbDVcdBi2Za1vrv'] || r.fields['Date encaissement']);
-          var amt = +(r.fields['fldURctTu4Y4if2ou'] || r.fields['Montant collect\u00e9'] || 0);
-          if (lbl && lbl in nouv) nouv[lbl] += amt;
-        });
-        (res[1].records||[]).forEach(function(r) {
-          var lbl = toLabel(r.fields['fldOdndgzDpIg3fa7'] || r.fields['Date paiement']);
-          var amt = +(r.fields['fldcd36vhzEaQCkFI'] || r.fields['Montant \u20ac'] || 0);
-          if (lbl && lbl in anc) anc[lbl] += amt;
-        });
-        var ctx = document.getElementById('chart-cash-split');
-        if (!ctx || !window.Chart) { console.warn('[CashChart] canvas or Chart.js missing'); return; }
-        new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [
-              { label: 'Nouveau cash (CRM)', data: labels.map(function(l){return nouv[l]||0;}),
-                backgroundColor: 'rgba(34,197,94,0.82)', borderRadius: 6 },
-              { label: 'Ancien cash (hors CRM)', data: labels.map(function(l){return anc[l]||0;}),
-                backgroundColor: 'rgba(59,130,246,0.82)', borderRadius: 6 }
-            ]
-          },
-          options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { position: 'top', labels: { color: '#e5e7eb', font:{size:13} } } },
-            scales: {
-              x: { ticks:{color:'#9ca3af'}, grid:{color:'rgba(255,255,255,0.06)'} },
-              y: { ticks:{color:'#9ca3af',callback:function(v){return v.toLocaleString('fr-FR')+'\u20ac';}},
-                   grid:{color:'rgba(255,255,255,0.06)'} }
-            }
-          }
-        });
-        // Add ancien cash this month to CA Collecté display
-        var now2 = new Date();
-        var curLbl = now2.toLocaleDateString('fr-FR',{month:'short',year:'2-digit'});
-        var ancCur = anc[curLbl]||0;
-        if (ancCur > 0) {
-          var el = document.getElementById('ceo-col');
-          if (el) {
-            var cur = parseFloat((el.textContent||'0').replace(/[^\d.]/g,''))||0;
-            el.textContent = (cur+ancCur).toLocaleString('fr-FR')+'\u20ac';
-          }
-        }
-      }).catch(function(e){console.error('[CashChart] error:',e);});
-    } catch(ex){console.error('[CashChart] init error:',ex);}
-  }
-  if (document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',function(){setTimeout(run,1800);});
-  } else { setTimeout(run,1800); }
-})();
-</script>
 </body>
 </html>
