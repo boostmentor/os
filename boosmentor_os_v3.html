@@ -2542,7 +2542,7 @@ function switchVenteMode(mode){
   var nn=document.getElementById('vte-notes');
   if(nn){var nc=(nn.closest&&nn.closest('.fi'))||nn.parentElement;if(nc)nc.style.display=hide?'none':'';}
   var cl=document.getElementById('vte-checklist');
-  if(cl){var el=cl;while(el.parentElement&&el.parentElement.id!=='modal-vente')el=el.parentElement;el.style.display=hide?'none':'';}
+  if(cl&&cl.parentElement){cl.parentElement.style.display=hide?'none':'';}
   var btn=document.querySelector('#modal-vente button[onclick="handleVenteSave()"]');
   if(btn)btn.textContent=hide?'💰 Enregistrer le paiement':'✓ Enregistrer la vente';
 }
