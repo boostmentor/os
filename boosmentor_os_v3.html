@@ -1336,7 +1336,7 @@ function refreshCEO(){
   const lf=statsFrom?leads.filter(l=>(l.createdTime||l.dateEntree||'')>=statsFrom):leads;
   const signes=lf.filter(l=>l.statut==='Signé').length;
   const appels=lf.filter(l=>l.statut==='Appel réservé'||l.statut==='Signé'||l.statut==='Perdu').length||1;
-  const const _rv=JSON.parse(localStorage.getItem('bm_ventes')||'[]');const _rp=JSON.parse(localStorage.getItem('bm_paiements')||'[]');totalCollected=_rv.reduce((s,v)=>s+(v.montant||0),0)+_rp.reduce((s,p)=>s+(p.montant||0),0);
+  const _rv=JSON.parse(localStorage.getItem('bm_ventes')||'[]');const _rp=JSON.parse(localStorage.getItem('bm_paiements')||'[]');totalCollected=_rv.reduce((s,v)=>s+(v.montant||0),0)+_rp.reduce((s,p)=>s+(p.montant||0),0);
   s('ceo-c',fE(totalCA));
   s('ceo-col',fE(totalCollected));
   s('ceo-cost',fE(totalCosts));
