@@ -2529,6 +2529,7 @@ function saveMetrics(){
 </div>
 <script>
 function switchVenteMode(mode){
+  var _mv=document.getElementById('modal-vente');if(_mv&&_mv.firstElementChild)_mv.firstElementChild.style.display='';
   window._venteMode=mode||'vente';
   var hide=mode==='pay';
   var tabV=document.getElementById('vte-tab-vente');
