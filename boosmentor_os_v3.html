@@ -843,6 +843,16 @@ tbody td:first-child{color:var(--text);font-weight:500}
       <div style="font-size:16px;font-weight:700;color:var(--text)">🎉 Nouvelle Vente</div>
       <button onclick="closeVenteModal()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:22px;line-height:1">&times;</button>
     </div>
+    <div id="vte-mode-tabs" style="display:flex;gap:0;border-bottom:2px solid var(--border);margin:0 0 14px">
+      <button id="vte-tab-vente" onclick="switchVenteMode('vente')" style="flex:1;padding:9px 6px;background:var(--accent);color:#fff;border:none;cursor:pointer;font-weight:600;font-size:13px">🎉 Nouvelle vente</button>
+      <button id="vte-tab-pay" onclick="switchVenteMode('pay')" style="flex:1;padding:9px 6px;background:none;color:var(--text);border:none;cursor:pointer;font-size:13px">💰 Paiement client existant</button>
+    </div>
+    <div id="vte-pay-form" style="display:none;padding:4px 0">
+      <div style="margin-bottom:10px"><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">Nom client</label><input id="pay-nom" type="text" placeholder="Ex: Jean Dupont" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text);font-size:14px;box-sizing:border-box"></div>
+      <div style="margin-bottom:10px"><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">Montant €</label><input id="pay-montant" type="number" min="0" step="0.01" placeholder="0" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text);font-size:14px;box-sizing:border-box"></div>
+      <div style="margin-bottom:10px"><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">Date paiement</label><input id="pay-date" type="date" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text);font-size:14px;box-sizing:border-box"></div>
+      <div style="margin-bottom:6px"><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">Notes (optionnel)</label><textarea id="pay-notes" rows="2" placeholder="Ex: 2e mensualité, coaching..." style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text);font-size:14px;resize:vertical;box-sizing:border-box"></textarea></div>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
       <div class="fi" style="grid-column:1/-1"><div class="fl">Client / Prospect</div><select id="vte-prospect" onchange="onVenteProspectChange()" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px"><option value="">— Sélectionner un prospect</option></select></div>
       <div class="fi"><div class="fl">Canal d’acquisition</div><div id="vte-canal-display" style="padding:8px 10px;border-radius:6px;border:1px solid var(--border);background:var(--s1);color:var(--text2);font-size:14px;min-height:36px;display:flex;align-items:center">—</div></div>
@@ -867,7 +877,7 @@ tbody td:first-child{color:var(--text);font-weight:500}
         <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;cursor:pointer"><input type="checkbox" data-label="Premier point de suivi planifié" style="accent-color:var(--green)"><span style="font-size:13px;color:var(--text2)">Premier point de suivi planifié</span></label>
       </div>
     </div>
-    <button onclick="saveVente()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer">✓ Enregistrer la vente</button>
+    <button onclick="handleVenteSave()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer">✓ Enregistrer la vente</button>
   </div>
 </div>
 
@@ -2239,6 +2249,7 @@ function onVenteProspectChange(){
 }
 function openVenteModal() {
   document.getElementById('modal-vente').style.display = 'flex';
+  if(typeof switchVenteMode==='function')switchVenteMode('vente');
   const d = new Date().toISOString().split('T')[0];
   document.getElementById('vte-date').value = d;
   populateVenteSelect();
@@ -2516,5 +2527,50 @@ function saveMetrics(){
     <div style="margin-top:16px;text-align:right"><button class="btn" onclick="saveMetrics()">Enregistrer</button></div>
   </div>
 </div>
+<script>
+function switchVenteMode(mode){
+  window._venteMode=mode||'vente';
+  var hide=mode==='pay';
+  var tabV=document.getElementById('vte-tab-vente');
+  var tabP=document.getElementById('vte-tab-pay');
+  if(tabV){tabV.style.background=!hide?'var(--accent)':'transparent';tabV.style.color=!hide?'#fff':'var(--text)';tabV.style.fontWeight=!hide?'600':'400';}
+  if(tabP){tabP.style.background=hide?'var(--accent)':'transparent';tabP.style.color=hide?'#fff':'var(--text)';tabP.style.fontWeight=hide?'600':'400';}
+  var pf=document.getElementById('vte-pay-form');
+  if(pf)pf.style.display=hide?'block':'none';
+  var mc=document.getElementById('vte-montant-c');
+  if(mc){var gd=mc.closest&&mc.closest('.fi')&&mc.closest('.fi').parentElement;if(gd)gd.style.display=hide?'none':'';}
+  var nn=document.getElementById('vte-notes');
+  if(nn){var nc=(nn.closest&&nn.closest('.fi'))||nn.parentElement;if(nc)nc.style.display=hide?'none':'';}
+  var cl=document.getElementById('vte-checklist');
+  if(cl){var el=cl;while(el.parentElement&&el.parentElement.id!=='modal-vente')el=el.parentElement;el.style.display=hide?'none':'';}
+  var btn=document.querySelector('#modal-vente button[onclick="handleVenteSave()"]');
+  if(btn)btn.textContent=hide?'💰 Enregistrer le paiement':'✓ Enregistrer la vente';
+}
+function handleVenteSave(){
+  if(window._venteMode==='pay'){savePaiementExistant();}else{saveVente();}
+}
+async function savePaiementExistant(){
+  var nom=((document.getElementById('pay-nom')||{}).value||'').trim();
+  var montant=parseFloat((document.getElementById('pay-montant')||{}).value)||0;
+  var date=((document.getElementById('pay-date')||{}).value||'').trim();
+  var notes=((document.getElementById('pay-notes')||{}).value||'').trim();
+  if(!nom||!montant||!date){alert('Merci de remplir le nom, le montant et la date.');return;}
+  var fields={};
+  fields['fldfzoqhBSO4ZEVlR']=nom;
+  fields['fldcd36vhzEaQCkFI']=montant;
+  fields['fldOdndgzDpIg3fa7']=date;
+  if(notes)fields['fldZL0KjQboKJm9eU']=notes;
+  try{
+    var resp=await fetch('https://api.airtable.com/v0/appcoXmZ3k9S1pcso/tbl9PU0xWv9NznB6h',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+AT,'Content-Type':'application/json'},
+      body:JSON.stringify({fields:fields})
+    });
+    if(!resp.ok){var et=await resp.text();throw new Error('HTTP '+resp.status+': '+et);}
+    closeVenteModal();
+    alert('✅ Paiement enregistré avec succès !');
+  }catch(e){alert('Erreur lors de l\u2019enregistrement: '+e.message);}
+}
+</script>
 </body>
 </html>
