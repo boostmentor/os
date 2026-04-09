@@ -2596,8 +2596,8 @@ function renderPaiements(){
     html+='<div style="flex:1"><div style="font-size:13px;font-weight:500">'+p.nom+'</div>';
     html+='<div style="font-size:11px;color:var(--text2)">'+dt+(p.notes?' \u2022 '+p.notes:'')+'</div></div>';
     html+='<div style="font-size:14px;font-weight:700;color:var(--green)">'+p.montant.toLocaleString('fr-FR')+'&euro;</div>';
-    html+='<button onclick="openEditPaiement(\\''+p.id+'\\')" style="background:none;border:none;cursor:pointer;font-size:15px;padding:2px 6px;color:var(--text2)" title="Modifier">\u270F\uFE0F</button>';
-    html+='<button onclick="deletePaiement(\\''+p.id+'\\')" style="background:none;border:none;cursor:pointer;font-size:15px;padding:2px 6px" title="Supprimer">\uD83D\uDDD1</button>';
+    html+='<button onclick="openEditPaiement(\''+p.id+'\')" style="background:none;border:none;cursor:pointer;font-size:15px;padding:2px 6px;color:var(--text2)" title="Modifier">\u270F\uFE0F</button>';
+    html+='<button onclick="deletePaiement(\''+p.id+'\')" style="background:none;border:none;cursor:pointer;font-size:15px;padding:2px 6px" title="Supprimer">\uD83D\uDDD1</button>';
     html+='</div>';
   });
   html+='</div>';
